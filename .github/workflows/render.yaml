@@ -5,6 +5,8 @@ on:
     - cron: '45 3 * * *'  # ⏰ 9:30 AM Nepal time (NPT = UTC+5:45)
   workflow_dispatch:       # manual trigger option
 
+
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -26,3 +28,11 @@ jobs:
 
       - name: Run Daily Update Script
         run: python daily_update.py
+
+      - name: Install Google Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip xvfb libxi6 libgconf-2-4 libappindicator1 libindicator7
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -fy install
+

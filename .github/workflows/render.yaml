@@ -1,0 +1,28 @@
+name: Daily Stock Update
+
+on:
+  schedule:
+    - cron: '15 12 * * *'  # ⏰ 6 PM Nepal time = 12:15 UTC
+  workflow_dispatch:       # manual trigger option
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install jupyter nbconvert nbformat
+
+      - name: Run Daily Update Script
+        run: python daily_update.py

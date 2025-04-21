@@ -3,6 +3,11 @@ from stocks.models import Stock
 from nepse_data import NepseData
 import pandas as pd
 import os
+from django.conf import settings
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+folder_path = os.path.join(BASE_DIR, "stock_history")
 
 class Command(BaseCommand):
     help = "Update historical stock data: appends if CSV exists, creates new if not."

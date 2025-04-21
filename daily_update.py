@@ -15,7 +15,7 @@ if __name__ == "__main__":
     print("🕒 Update started at", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
     # Move to project base dir just in case it's run from Task Scheduler
-    os.chdir("C:/Users/Bishal/Desktop/Final Project/StockSanket")
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
     # 1. Update stock table from Merolagani + NEPSE
     run_command("python manage.py update_stocks", "Update stock details")

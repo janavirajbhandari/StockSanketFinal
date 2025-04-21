@@ -8,18 +8,19 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import re
 import time
+from webdriver_manager.chrome import ChromeDriverManager
 
 class Command(BaseCommand):
     help = "Update or add all stocks from Merolagani & verify with NEPSE"
 
-    def handle(self, *args, **kwargs):
-        chrome_driver_path = r"C:\\Users\\Bishal\\Downloads\\chromedriver-win64\\chromedriver-win64\\chromedriver.exe"
+    def handle(self, *args, **kwargs)
 
         options = Options()
         options.add_argument("--headless")
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
         options.add_argument("user-agent=Mozilla/5.0")
+        service = Service(ChromeDriverManager().install())
 
         main_driver = webdriver.Chrome(service=Service(chrome_driver_path), options=options)
         nepse_driver = webdriver.Chrome(service=Service(chrome_driver_path), options=options)

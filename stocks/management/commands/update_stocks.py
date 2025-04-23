@@ -13,7 +13,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 class Command(BaseCommand):
     help = "Update or add all stocks from Merolagani & verify with NEPSE"
 
-    def handle(self, *args, **kwargs)
+    def handle(self, *args, **kwargs):
 
         options = Options()
         options.add_argument("--headless")

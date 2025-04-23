@@ -16,6 +16,7 @@ if __name__ == "__main__":
 
     # Move to project base dir just in case it's run from Task Scheduler
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(BASE_DIR) 
 
     # 1. Update stock table from Merolagani + NEPSE
     run_command("python manage.py update_stocks", "Update stock details")

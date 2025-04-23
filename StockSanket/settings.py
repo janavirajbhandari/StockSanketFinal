@@ -92,16 +92,14 @@ WSGI_APPLICATION = 'StockSanket.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'all_stocks',  # Your actual database name
-        'USER': 'root',
-        'PASSWORD': 'janavi',  # Your MySQL password
-        'HOST': '127.0.0.1',  # Use '127.0.0.1' (NOT 'localhost')
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
-        }
+        'NAME': os.environ.get('MYSQL_DATABASE', 'stocksanket'),
+        'USER': os.environ.get('MYSQL_USER', 'root'),
+        'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'password'),
+        'HOST': os.environ.get('MYSQL_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('MYSQL_PORT', '3306'),
     }
 }
+
 
 
 

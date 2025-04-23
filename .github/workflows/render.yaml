@@ -28,10 +28,11 @@ jobs:
           
       - name: Install Google Chrome
         run: |
-            sudo apt-get update
-            sudo apt-get install -y wget unzip xvfb libxi6 libindicator7
-            wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-            sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -fy instll
+          sudo apt-get update
+          sudo apt-get install -y wget unzip xvfb libxi6 libindicator7 libayatana-appindicator3-1
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -fy install
+
 
       - name: Run Daily Update Script
         run: python daily_update.py

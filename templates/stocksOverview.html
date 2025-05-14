@@ -1,11 +1,17 @@
 <!-- Tab Content Sections -->
 <div class="mt-6 p-4 bg-white shadow-lg rounded-lg">
     <div class="grid grid-cols-12 gap-6 items-start">
+      <!-- Header -->
+        <!-- Stock Data Loader -->
+        <div id="stock-loader" class="bg-white shadow-lg p-6 rounded-lg hidden" >
+          <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+          <span class="ml-4 text-blue-600 font-semibold">Loading stock data...</span>
+      </div>
   
       <!-- Stock Info -->
       <div class="col-span-3 bg-white shadow-lg p-6 rounded-lg">
         <h2 class="text-2xl font-semibold mb-6">Stock Information</h2>
-        <div class="space-y-4 text-sm">
+        <div id="stock-data-container" class="space-y-4 text-sm">
           <p><strong>Market Cap:</strong> {{ stock.market_cap|default:"N/A" }}</p>
           <p><strong>Public Shares:</strong> {{ stock.public_shares|default:"N/A" }}</p>
           <p><strong>52 Weeks High/Low:</strong> {{ stock.week_52|default:"N/A" }}</p>
@@ -19,6 +25,8 @@
           <p><strong>Currency:</strong> {{ stock.currency|default:"N/A" }}</p>
         </div>
       </div>
+
+
   
       <!-- Stock Chart -->
       <div class="col-span-9">
@@ -138,6 +146,19 @@
             window.addEventListener("resize", () => {
               chart.resize(chartEl.clientWidth, 500);
             });
+
+            const dataContainer = document.getElementById("stock-data-container");
+            const loader = document.getElementById("stock-loader");
+
+                if (dataContainer && loader) {
+                    dataContainer.style.display = "none";
+                    loader.style.display = "flex";
+
+                    setTimeout(() => {
+                        loader.style.display = "none";
+                        dataContainer.style.display = "block";
+                    }, 600);
+                }
           });
         </script>
       </div>

@@ -1,31 +1,28 @@
-
-    <div class="overflow-x-auto bg-white shadow-lg rounded-lg p-4">
-        <table class="min-w-full divide-y divide-gray-200 border border-gray-300">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="px-4 py-3 font-semibold text-gray-700 border">Date</th>
-                    <th class="px-4 py-3 font-semibold text-gray-700 border">Open</th>
-                    <th class="px-4 py-3 font-semibold text-gray-700 border">High</th>
-                    <th class="px-4 py-3 font-semibold text-gray-700 border">Low</th>
-                    <th class="px-4 py-3 font-semibold text-gray-700 border">Close</th>
-                    <th class="px-4 py-3 font-semibold text-gray-700 border">% Change</th>
-                    <th class="px-4 py-3 font-semibold text-gray-700 border">Volume</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-                {% for data in historical_data %}
-                <tr>
-                    <td class="px-4 py-3 font-medium text-gray-900 border">{{ data.date }}</td>
-                    <td class="px-4 py-3 border">{{ data.open_price }}</td>
-                    <td class="px-4 py-3 border">{{ data.high_price }}</td>
-                    <td class="px-4 py-3 border">{{ data.low_price }}</td>
-                    <td class="px-4 py-3 border">{{ data.close_price }}</td>
-                    <td class="px-4 py-3 border">{{ data.adj_close_price }}</td>
-                    <td class="px-4 py-3 border">{{ data.volume }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            
-        </table>
-    </div>
+<!-- templates/stocksHistory.html -->
+<div id="history-table-wrapper">
+    {% include "partials/history_table.html" %}
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    function bindPaginationLinks() {
+        document.querySelectorAll(".history-page-link").forEach(link => {
+            link.addEventListener("click", function (e) {
+                e.preventDefault();
+                const page = this.dataset.page;
+                const symbol = "{{ stock.symbol }}";
+
+                fetch(`/stock/history_partial/?symbol=${symbol}&page=${page}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById("history-table-wrapper").innerHTML = data.html;
+                        bindPaginationLinks();  // Re-bind new pagination links
+                    })
+                    .catch(error => console.error("❌ Pagination error:", error));
+            });
+        });
+    }
+
+    bindPaginationLinks(); // Initial bind
+});
+</script>

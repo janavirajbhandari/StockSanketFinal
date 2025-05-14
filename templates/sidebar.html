@@ -1,4 +1,20 @@
 {% load static %}
+<style>
+    #search-results a {
+        display: block;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        color: #374151; /* text-gray-700 */
+        border-bottom: 1px solid #eee;
+        text-decoration: none;
+    }
+    #search-results a:hover {
+        background-color: #f3f4f6;
+        color: #1d4ed8;
+    }
+    </style>
+    
+
 
 <!-- Top Navbar (White Background) -->
 <nav class="h-16 w-full bg-white border-b shadow-sm flex items-center px-6 justify-between fixed top-0 left-0 right-0 z-50">
@@ -7,13 +23,19 @@
         <img src="{% static 'logo.png' %}" class="h-14 w-70" alt="Logo">
     </div>
 
-    <!-- Middle: Search Bar -->
-    <div class="w-1/3 flex items-center bg-gray-100 px-3 py-2 rounded-lg shadow-sm">
-        <span class="material-icons text-gray-500">search</span>
-        <input type="text" placeholder="Search by Symbol or Company Name" 
-               class="w-full outline-none bg-transparent ml-2 text-sm">
-        <span class="material-icons text-gray-500">arrow_drop_down</span>
+    <div class="w-1/3 relative">
+        <div class="flex items-center bg-gray-100 px-3 py-2 rounded-lg shadow-sm">
+            <span class="material-icons text-gray-500">search</span>
+            <input type="text" id="stock-search" placeholder="Search by Symbol or Company Name" 
+                   class="w-full outline-none bg-transparent ml-2 text-sm relative z-10">
+        </div>
+    
+        <!-- ✅ Moved outside of the input container, so it's not restricted -->
+        <div id="search-results" 
+             class="absolute top-full left-0 right-0 mt-1 bg-white shadow-lg rounded-md z-20 hidden max-h-64 overflow-y-auto border border-gray-200">
+        </div>
     </div>
+    
 
     <!-- Right Side: Login & Contact -->
     <div class="flex items-center space-x-4 relative">
@@ -181,4 +203,93 @@ document.addEventListener("click", function (e) {
         dropdown.classList.add("hidden");
     }
 });
+
+
+function searchStocks() {
+    const input = document.getElementById("stock-search");
+    const list = document.getElementById("suggestions");
+    const query = input.value;
+
+    if (!query.trim()) {
+        list.innerHTML = "";
+        list.classList.add("hidden");
+        return;
+    }
+
+    fetch(`/search-stocks/?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            list.innerHTML = "";
+            if (data.length === 0) {
+                list.classList.add("hidden");
+                return;
+            }
+
+            data.forEach(stock => {
+                const li = document.createElement("li");
+                li.className = "px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm";
+                li.textContent = `${stock.symbol} — ${stock.name}`;
+                li.onclick = () => {
+                    window.location.href = `/compare_stocks/?symbol=${stock.symbol}`;
+                };
+                list.appendChild(li);
+            });
+
+            list.classList.remove("hidden");
+        });
+}
+
+// Optional: Hide suggestions on outside click
+document.addEventListener("click", function (event) {
+    const suggestions = document.getElementById("suggestions");
+    const searchInput = document.getElementById("stock-search");
+
+    if (!suggestions.contains(event.target) && event.target !== searchInput) {
+        suggestions.classList.add("hidden");
+    }
+});
+
 </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById("stock-search");
+        const resultsBox = document.getElementById("search-results");
+    
+        searchInput.addEventListener("input", function () {
+            const query = this.value;
+            if (query.length === 0) {
+                resultsBox.innerHTML = "";
+                resultsBox.classList.add("hidden");
+                return;
+            }
+    
+            fetch(`/ajax/search-stocks/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const results = data.results;
+                    if (results.length === 0) {
+                        resultsBox.innerHTML = "<div class='px-4 py-2 text-gray-500'>No matches</div>";
+                        resultsBox.classList.remove("hidden");
+                        return;
+                    }
+    
+                    resultsBox.innerHTML = results.map(item => `
+                        <a href="/stockDetail/?symbol=${item.symbol}" class="block px-4 py-2 hover:bg-gray-200 text-sm text-gray-700">
+                             <span class="font-semibold text-blue-600 ml-2">(${item.symbol})</span>
+                             <span>${item.name}</span>
+                        </a>
+                    `).join("");
+    
+                    resultsBox.classList.remove("hidden");
+                });
+        });
+    
+        // Hide dropdown when clicking outside
+        document.addEventListener("click", function (e) {
+            if (!searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
+                resultsBox.classList.add("hidden");
+            }
+        });
+    });
+    </script>
+    

@@ -1,5 +1,20 @@
-# render.yaml
-cron:
-  - name: daily-stock-update
-    schedule: "15 12 * * *"  # 6PM Nepal time is 12:15 UTC
-    command: "python daily_update.py"
+# .github/workflows/daily_update.yml
+name: Daily Stock Prediction
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # Every day at 6 PM Nepal time (UTC+6:45 is ~12:15 UTC)
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run prediction
+        run: python daily_update.py

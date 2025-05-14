@@ -29,7 +29,7 @@ for file in os.listdir(stock_history_dir):
     stock_output_dir = os.path.join(output_folder, symbol)
     os.makedirs(stock_output_dir, exist_ok=True)
 
-    print(f"📊 Running prediction for {symbol}...")
+    print(f"running prediction for {symbol}...")
 
     # Copy notebook and inject variables
     nb = nbformat.from_dict(original_nb)
@@ -45,7 +45,12 @@ output_dir = r"{stock_output_dir}"
     ep = ExecutePreprocessor(timeout=3600, kernel_name='python3')  # 👈 use 'python3' for compatibility
 
     try:
+<<<<<<< HEAD
         ep.preprocess(nb, {'metadata': {'path': BASE_DIR}})
         print(f"✅ {symbol} complete!")
+=======
+        ep.preprocess(nb, {'metadata': {'path': '.'}})
+        print(f"{symbol} complete!")
+>>>>>>> 1b0289d (Project)
     except Exception as e:
-        print(f"❌ Error running {symbol}: {e}")
+        print(f"Error running {symbol}: {e}")

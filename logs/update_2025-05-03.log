@@ -1,0 +1,183 @@
+2025-05-03 15:12:02.529396: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-05-03 15:12:06.362469: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+System check identified some issues:
+
+WARNINGS:
+?: (staticfiles.W004) The directory 'C:\Users\Bishal\Desktop\Final Project\StockSanket\static' in the STATICFILES_DIRS setting does not exist.
+2025-05-03 15:19:32.115272: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-05-03 15:19:37.518827: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+System check identified some issues:
+
+WARNINGS:
+?: (staticfiles.W004) The directory 'C:\Users\Bishal\Desktop\Final Project\StockSanket\static' in the STATICFILES_DIRS setting does not exist.
+Updating historical data for 587 stocks...
+[1/587] Processing NABIL
+No data returned for NABIL
+[2/587] Processing NIMB
+No data returned for NIMB
+[3/587] Processing SCB
+No data returned for SCB
+^C2025-05-03 15:20:48.737177: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-05-03 15:20:53.958268: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+System check identified some issues:
+
+WARNINGS:
+?: (staticfiles.W004) The directory 'C:\Users\Bishal\Desktop\Final Project\StockSanket\static' in the STATICFILES_DIRS setting does not exist.
+Updating historical data for 587 stocks...
+[1/587] Processing NABIL
+No data returned for NABIL
+[2/587] Processing NIMB
+No data returned for NIMB
+[3/587] Processing SCB
+No data returned for SCB
+[4/587] Processing HBL
+No data returned for HBL
+[5/587] Processing SBI
+No data returned for SBI
+[6/587] Processing NBB
+No data returned for NBB
+[7/587] Processing EBL
+No data returned for EBL
+[8/587] Processing NICA
+No data returned for NICA
+[9/587] Processing MBL
+No data returned for MBL
+[10/587] Processing LSL
+No data returned for LSL
+[11/587] Processing KBL
+Updated KBL (2008 new rows)
+[12/587] Processing SBL
+Updated SBL (2245 new rows)
+[13/587] Processing YHL
+ Scraping failed for YHL: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//a[text()='Price History']"}
+  (Session info: chrome=135.0.7049.116); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception
+Stacktrace:
+	GetHandleVerifier [0x00007FF70C0F5335+78597]
+	GetHandleVerifier [0x00007FF70C0F5390+78688]
+	(No symbol) [0x00007FF70BEA91AA]
+	(No symbol) [0x00007FF70BEFF149]
+	(No symbol) [0x00007FF70BEFF3FC]
+	(No symbol) [0x00007FF70BF52467]
+	(No symbol) [0x00007FF70BF2712F]
+	(No symbol) [0x00007FF70BF4F2BB]
+	(No symbol) [0x00007FF70BF26EC3]
+	(No symbol) [0x00007FF70BEF03F8]
+	(No symbol) [0x00007FF70BEF1163]
+	GetHandleVerifier [0x00007FF70C39EEED+2870973]
+	GetHandleVerifier [0x00007FF70C399698+2848360]
+	GetHandleVerifier [0x00007FF70C3B6973+2967875]
+	GetHandleVerifier [0x00007FF70C11017A+188746]
+	GetHandleVerifier [0x00007FF70C11845F+222255]
+	GetHandleVerifier [0x00007FF70C0FD2B4+111236]
+	GetHandleVerifier [0x00007FF70C0FD462+111666]
+	GetHandleVerifier [0x00007FF70C0E3589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating YHL: cannot access local variable 'final_df' where it is not associated with a value
+[14/587] Processing SHL
+Updated SHL (13 new rows)
+[15/587] Processing TRH
+Updated TRH (13 new rows)
+[16/587] Processing OHL
+Updated OHL (13 new rows)
+[17/587] Processing NFD
+No data returned for NFD
+[18/587] Processing NHPC
+Updated NHPC (13 new rows)
+[19/587] Processing BPCL
+Updated BPCL (13 new rows)
+[20/587] Processing CHCL
+Updated CHCL (13 new rows)
+[21/587] Processing STC
+Updated STC (13 new rows)
+[22/587] Processing BBC
+ Scraping failed for BBC: Message: unknown error: net::ERR_NAME_NOT_RESOLVED
+  (Session info: chrome=135.0.7049.116)
+Stacktrace:
+	GetHandleVerifier [0x00007FF70C0F5335+78597]
+	GetHandleVerifier [0x00007FF70C0F5390+78688]
+	(No symbol) [0x00007FF70BEA91AA]
+	(No symbol) [0x00007FF70BEA5BA0]
+	(No symbol) [0x00007FF70BE96849]
+	(No symbol) [0x00007FF70BE985A8]
+	(No symbol) [0x00007FF70BE96B56]
+	(No symbol) [0x00007FF70BE965D6]
+	(No symbol) [0x00007FF70BE9629A]
+	(No symbol) [0x00007FF70BE93F4A]
+	(No symbol) [0x00007FF70BE9471C]
+	(No symbol) [0x00007FF70BEAD07A]
+	(No symbol) [0x00007FF70BF5002E]
+	(No symbol) [0x00007FF70BF270EA]
+	(No symbol) [0x00007FF70BF4F2BB]
+	(No symbol) [0x00007FF70BF26EC3]
+	(No symbol) [0x00007FF70BEF03F8]
+	(No symbol) [0x00007FF70BEF1163]
+	GetHandleVerifier [0x00007FF70C39EEED+2870973]
+	GetHandleVerifier [0x00007FF70C399698+2848360]
+	GetHandleVerifier [0x00007FF70C3B6973+2967875]
+	GetHandleVerifier [0x00007FF70C11017A+188746]
+	GetHandleVerifier [0x00007FF70C11845F+222255]
+	GetHandleVerifier [0x00007FF70C0FD2B4+111236]
+	GetHandleVerifier [0x00007FF70C0FD462+111666]
+	GetHandleVerifier [0x00007FF70C0E3589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating BBC: cannot access local variable 'final_df' where it is not associated with a value
+[23/587] Processing NTL
+Error updating NTL: Message: session not created: DevToolsActivePort file doesn't exist
+Stacktrace:
+	GetHandleVerifier [0x00007FF70C0F5335+78597]
+	GetHandleVerifier [0x00007FF70C0F5390+78688]
+	(No symbol) [0x00007FF70BEA91AA]
+	(No symbol) [0x00007FF70BEEB9C9]
+	(No symbol) [0x00007FF70BEE67EC]
+	(No symbol) [0x00007FF70BEE1A5D]
+	(No symbol) [0x00007FF70BF351E5]
+	(No symbol) [0x00007FF70BF347A0]
+	(No symbol) [0x00007FF70BF26EC3]
+	(No symbol) [0x00007FF70BEF03F8]
+	(No symbol) [0x00007FF70BEF1163]
+	GetHandleVerifier [0x00007FF70C39EEED+2870973]
+	GetHandleVerifier [0x00007FF70C399698+2848360]
+	GetHandleVerifier [0x00007FF70C3B6973+2967875]
+	GetHandleVerifier [0x00007FF70C11017A+188746]
+	GetHandleVerifier [0x00007FF70C11845F+222255]
+	GetHandleVerifier [0x00007FF70C0FD2B4+111236]
+	GetHandleVerifier [0x00007FF70C0FD462+111666]
+	GetHandleVerifier [0x00007FF70C0E3589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+[24/587] Processing NWC
+ Scraping failed for NWC: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//a[text()='Price History']"}
+  (Session info: chrome=135.0.7049.116); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception
+Stacktrace:
+	GetHandleVerifier [0x00007FF70C0F5335+78597]
+	GetHandleVerifier [0x00007FF70C0F5390+78688]
+	(No symbol) [0x00007FF70BEA91AA]
+	(No symbol) [0x00007FF70BEFF149]
+	(No symbol) [0x00007FF70BEFF3FC]
+	(No symbol) [0x00007FF70BF52467]
+	(No symbol) [0x00007FF70BF2712F]
+	(No symbol) [0x00007FF70BF4F2BB]
+	(No symbol) [0x00007FF70BF26EC3]
+	(No symbol) [0x00007FF70BEF03F8]
+	(No symbol) [0x00007FF70BEF1163]
+	GetHandleVerifier [0x00007FF70C39EEED+2870973]
+	GetHandleVerifier [0x00007FF70C399698+2848360]
+	GetHandleVerifier [0x00007FF70C3B6973+2967875]
+	GetHandleVerifier [0x00007FF70C11017A+188746]
+	GetHandleVerifier [0x00007FF70C11845F+222255]
+	GetHandleVerifier [0x00007FF70C0FD2B4+111236]
+	GetHandleVerifier [0x00007FF70C0FD462+111666]
+	GetHandleVerifier [0x00007FF70C0E3589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating NWC: cannot access local variable 'final_df' where it is not associated with a value
+[25/587] Processing NUBL
+Updated NUBL (13 new rows)
+^C2025-05-03 18:50:48.790396: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-05-03 18:50:53.518691: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+^C

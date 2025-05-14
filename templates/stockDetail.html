@@ -10,7 +10,6 @@
 <body class="bg-gray-100">
 
 {% extends 'base.html' %}
-
 {% block content %}
 <div class="flex">
     {% include 'sidebar.html' %}
@@ -19,7 +18,14 @@
     <main class="flex-1 p-6 lg:ml-[180px] mt-16">
 
         <!-- Header -->
-        <div class="bg-white shadow-lg p-6 rounded-lg">
+        <!-- Stock Data Loader -->
+        <div id="stock-loader" class="bg-white shadow-lg p-6 rounded-lg hidden" >
+            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+            <span class="ml-4 text-blue-600 font-semibold">Loading stock data...</span>
+        </div>
+
+        <!-- Actual Stock Header Data -->
+        <div id="stock-data-container" class="bg-white shadow-lg p-6 rounded-lg hidden">
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-[#001F7B] text-3xl font-bold">{{ stock.company|default:"N/A" }} ({{ stock.symbol|default:"N/A" }})</h1>
@@ -47,6 +53,14 @@
                     </div>
                     {% endif %}
 
+                    <button onclick="redirectToCompare('{{ stock.symbol }}')" class="bg-[#002F7B] text-white px-5 py-2 rounded-lg shadow-md hover:bg-[#001A4D] flex items-center space-x-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V3m6 3V3M6 3v3m12 9v3m-6-3v3M6 15v3m12-9h3m-3 6h3m-3-3h3M3 12h3m-3-3h3m-3 6h3M3 12h3m12 0h3" />
+                        </svg>
+                        <span>Compare</span>
+                    </button>
+
+                    <!-- Watchlist Modal -->
                     <div id="watchlist-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                         <div class="bg-white rounded-lg p-6 shadow-lg w-96">
                             <h2 class="text-xl font-semibold text-gray-800 mb-4">Add to Watchlist</h2>
@@ -58,17 +72,6 @@
                         </div>
                     </div>
 
-                    <button onclick="redirectToCompare('{{ stock.symbol }}')" class="bg-[#002F7B] text-white px-5 py-2 rounded-lg shadow-md hover:bg-[#001A4D] flex items-center space-x-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V3m6 3V3M6 3v3m12 9v3m-6-3v3M6 15v3m12-9h3m-3 6h3m-3-3h3M3 12h3m-3-3h3m-3 6h3M3 12h3m12 0h3" />
-                        </svg>
-                        <span>Compare</span>
-                    </button>
-                    <script>
-                        function redirectToCompare(symbol) {
-                            window.location.href = `/compare_stocks/?symbol=${symbol}`;
-                        }
-                    </script>
                 </div>
             </div>
 
@@ -84,6 +87,7 @@
             </div>
             <p class="text-gray-500">At close: {{ stock.date|default:"N/A" }}</p>
         </div>
+
 
         <!-- Tabs -->
         <div class="mt-6 border-b rounded-lg p-3">
@@ -102,7 +106,115 @@
         <div id="sentiment" class="tab-content hidden">{% include 'stocksSentiment.html' %}</div>
 
         <!-- Scripts -->
-        <script>
+            <script>
+                function redirectToCompare(symbol) {
+                            window.location.href = `/compare_stocks/?symbol=${symbol}`;
+                        }
+                        
+                function openWatchlistModal(button) {
+                const symbol = button.getAttribute("data-symbol");
+                const company = button.getAttribute("data-company");
+
+                selectedStockSymbol = symbol;
+                selectedStockName = company;
+
+                document.getElementById("watchlist-message").innerText = `Do you want to add ${company} (${symbol}) to your watchlist?`;
+                document.getElementById("watchlist-modal").classList.remove("hidden");
+            }
+
+            function closeModal() {
+                document.getElementById("watchlist-modal").classList.add("hidden");
+            }
+
+            function addToWatchlist() {
+            const btn = document.getElementById("watchlist-btn");
+            const data = {
+                symbol: btn.dataset.symbol,
+                company: btn.dataset.company,
+                price: parseFloat(btn.dataset.price),
+                volume: parseInt(btn.dataset.volume.replace(",", "")),
+                market_cap: btn.dataset.market_cap,
+                public_shares: btn.dataset.public_shares,
+                week_52: btn.dataset.week_52,
+            };
+
+            fetch("/add_to_watchlist/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                closeModal(); // Hide modal
+
+                if (data.success) {
+                    // Show success alert
+                    showAlert("success", data.message);
+
+                    // Replace button with "View in Watchlist"
+                    const wrapper = document.getElementById("watchlist-button-wrapper");
+                    wrapper.innerHTML = `
+                        <a href="/watchlists/" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                            ✅ View in Watchlist
+                        </a>
+                    `;
+                } else {
+                    showAlert("error", data.error || "Something went wrong.");
+                }
+            })
+            .catch(error => {
+                showAlert("error", "Error adding to watchlist.");
+                console.error("Watchlist Error:", error);
+            });
+        }
+
+
+
+
+            function showAlert(type, message) {
+            const alertContainer = document.getElementById("alert-container");
+
+            // Create alert div with increased width and no close button
+            const alert = document.createElement("div");
+            alert.className = `bg-${getAlertColor(type)}-100 border border-${getAlertColor(type)}-400 text-${getAlertColor(type)}-700 px-6 py-4 rounded shadow-lg flex items-center transition-opacity duration-500 ease-in-out opacity-100 mt-14 max-w-[700px] w-full relative pointer-events-auto`;
+            alert.innerHTML = `
+                <strong class="font-bold">${capitalize(type)}:</strong>
+                <span class="ml-2">${message}</span>
+            `;
+
+            // Append to alert container
+            alertContainer.appendChild(alert);
+
+            // Remove alert after 10 seconds with fade-out effect
+            setTimeout(() => {
+                alert.classList.add("opacity-0");
+                setTimeout(() => alert.remove(), 500);
+            }, 4000);
+        }
+
+
+            function removeAlert(button) {
+                let alertBox = button.parentElement;
+                alertBox.classList.add("opacity-0");
+                setTimeout(() => alertBox.remove(), 500);
+            }
+
+            function getAlertColor(type) {
+                switch (type) {
+                    case "success": return "green";
+                    case "error": return "red";
+                    case "warning": return "yellow";
+                    case "info": return "blue";
+                    default: return "gray";
+                }
+            }
+
+            function capitalize(str) {
+                return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+
             function waitForChartToBeReady(callback) {
                 const el = document.getElementById("candlestick-chart");
                 if (el && el.offsetWidth > 0 && el.offsetHeight > 0) {
@@ -113,6 +225,7 @@
             }
 
             document.addEventListener("DOMContentLoaded", function () {
+                
                 document.querySelectorAll(".tab-content").forEach(content => content.classList.add("hidden"));
                 document.getElementById("overview").classList.remove("hidden");
 
@@ -135,7 +248,25 @@
                         }
                     });
                 });
+                
+                
+                const dataContainer = document.getElementById("stock-data-container");
+                const loader = document.getElementById("stock-loader");
+
+                if (dataContainer && loader) {
+                    dataContainer.style.display = "none";
+                    loader.style.display = "flex";
+
+                    setTimeout(() => {
+                        loader.style.display = "none";
+                        dataContainer.style.display = "block";
+                    }, 600);
+                }
             });
+
+            
+
+
         </script>
         <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
         <script>

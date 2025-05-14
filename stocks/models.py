@@ -5,21 +5,24 @@ from django.db import models
 
 # models.py
 from django.core.paginator import Paginator
+# models.py
 
-# ✅ Define Stock first
+
 class Stock(models.Model):
-    symbol = models.CharField(max_length=20, unique=True)
-    company = models.CharField(max_length=100)
-    sector = models.CharField(max_length=100, blank=True, null=True)
-    last_price = models.FloatField(null=True, blank=True)
-    market_cap = models.CharField(max_length=100, blank=True, null=True)
-    industry = models.CharField(max_length=100, blank=True, null=True)
-    revenue = models.CharField(max_length=100, blank=True, null=True)
-    # ✅ Add this line
     company_id = models.IntegerField(null=True, blank=True)
+    company_name = models.CharField(max_length=255)
+    symbol = models.CharField(max_length=20, unique=True)
+    security_name = models.CharField(max_length=255)
+    status = models.CharField(max_length=10)
+    company_email = models.CharField(max_length=255, null=True, blank=True)
+    website = models.URLField(max_length=255, null=True, blank=True)
+    sector_name = models.CharField(max_length=255)
+    regulatory_body = models.CharField(max_length=255)
+    instrument_type = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.symbol} - {self.company}"
+        return f"{self.symbol} - {self.company_name}"
+
 
 # ✅ Now it’s safe to reference Stock
 class HistoricalStockData(models.Model):

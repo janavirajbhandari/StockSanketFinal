@@ -30,7 +30,6 @@ DEBUG = True
 ALLOWED_HOSTS = ['stocksanket-prediction-website-fyp-1.onrender.com', 'localhost', '127.0.0.1']
 
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
 
     # Django built-in humanize app
     'django.contrib.humanize',
@@ -82,6 +82,7 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = 'StockSanket.asgi.application'
 
 WSGI_APPLICATION = 'StockSanket.wsgi.application'
 
@@ -92,14 +93,13 @@ WSGI_APPLICATION = 'StockSanket.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('MYSQL_DATABASE', 'stocksanket'),
+        'NAME': os.environ.get('MYSQL_DATABASE', 'all_stocks'),
         'USER': os.environ.get('MYSQL_USER', 'root'),
-        'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'password'),
+        'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'janavi'),
         'HOST': os.environ.get('MYSQL_HOST', '127.0.0.1'),
         'PORT': os.environ.get('MYSQL_PORT', '3306'),
     }
 }
-
 
 
 
@@ -151,3 +151,10 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',  # For now, use in-memory
+    }
+}

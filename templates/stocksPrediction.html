@@ -1,241 +1,284 @@
 <!-- stocksPrediction.html -->
-<div class="p-3 bg-white p-6 mx-auto ml-[210px] w-[1290px] shadow-lg rounded-lg">
-  <div class="grid grid-cols-12 gap-8 items-start">
+<div class="bg-white shadow-lg rounded-lg">
+  <div class="grid grid-cols-12 gap-8 items-start p-6">
 
     <!-- Stock Info -->
     <div class="col-span-3 bg-white shadow-lg p-6 rounded-lg">
       <!-- Predicted Data Table -->
-        <div class="mt-1">
-          <h3 class="text-l font-semibold mb-4">7 Days Predicted Close Prices</h3>
-          <div class="overflow-x-auto">
-            <table class="min-w-full table-auto border-collapse border border-gray-300">
-              <thead class="bg-gray-100">
-                <tr>
-                  <th class="px-6 py-3 border border-gray-300 text-left text-sm font-medium text-gray-700">Date</th>
-                  <th class="px-6 py-3 border border-gray-300 text-left text-sm font-medium text-gray-700">Close</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white">
+      <div class="mt-1">
+        <h3 class="text-l font-semibold mb-4">7 Days Predicted Close Prices</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full table-auto border-collapse border border-gray-300">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-6 py-3 border border-gray-300 text-left text-sm font-medium text-gray-700">Date</th>
+                <th class="px-6 py-3 border border-gray-300 text-left text-sm font-medium text-gray-700">Close</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white">
+              {% if predicted_data %}
                 {% for row in predicted_data %}
                 <tr class="hover:bg-gray-50">
                   <td class="px-6 py-4 border border-gray-300 text-sm text-gray-900">{{ row.date }}</td>
                   <td class="px-6 py-4 border border-gray-300 text-sm text-gray-900">{{ row.close }}</td>
                 </tr>
                 {% endfor %}
-                {% if predicted_data|length == 0 %}
-                <tr>
-                  <td colspan="2" class="px-6 py-4 text-center text-sm text-gray-500">No predicted data available.</td>
-                </tr>
-                {% endif %}
-              </tbody>
-            </table>
-          </div>
+              {% else %}
+              <tr>
+                <td colspan="2" class="px-6 py-4 text-center text-sm text-gray-500">
+                  <div class="flex flex-col items-center justify-center space-y-2">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p>Prediction data is not available for this stock yet.</p>
+                  </div>
+                </td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
         </div>
-
+      </div>
     </div>
 
     <!-- Prediction Chart -->
     <div class="col-span-9">
       <div id="chart-tooltip-container" class="mb-2 text-sm"></div>
-      <div id="prediction-candlestick-chart" class="w-full h-[500px]" style="min-width: 800px;"></div>
-    
-    </div>
-    </div>
-    </div>
-
-      <!-- Line Graph Section -->
-    <div class="p-3 p-6 mx-auto mt-6 ml-[210px] w-[1290px]">
-      <h3 class="text-xl font-semibold mb-4">Line Graph – Closing Price Forecast</h3>
-      <div class="bg-white p-6 rounded-lg shadow-lg mt-4">
-        <canvas id="line-forecast-chart" class="w-full h-[400px]"></canvas>
-      </div>
-    </div>  
-
-      <!-- Accuracy Comparison Section -->
-        <div class="p-3 mx-auto mt-6 ml-[210px] w-[1290px]">
-          <h3 class="text-xl font-semibold mb-4">Prediction vs Actual – Last 10 Days</h3>
-          <div class="grid grid-cols-2 gap-6">
-            
-            <!-- Left: Candlestick Chart -->
-            <div class="bg-white p-6 rounded-lg shadow-lg">
-              <h4 class="text-md font-semibold mb-2">Candlestick Accuracy</h4>
-              <div id="accuracy-candlestick-chart" class="w-full h-[400px]"></div>
-            </div>
-
-            <!-- Right: Line Graph -->
-            <div class="bg-white p-6 rounded-lg shadow-lg">
-              <h4 class="text-md font-semibold mb-2">Line Graph Accuracy</h4>
-              <canvas id="accuracy-line-chart" class="w-full h-[400px]"></canvas>
-            </div>
-
+      <div id="prediction-candlestick-chart" class="w-full h-[500px]" style="min-width: 800px;">
+        <!-- Loading State -->
+        <div id="chart-loading" class="flex items-center justify-center h-full">
+          <div class="text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p class="text-gray-600">Loading prediction data...</p>
           </div>
         </div>
+        <!-- Error State -->
+        <div id="chart-error" class="hidden flex items-center justify-center h-full">
+          <div class="text-center">
+            <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-gray-600">Prediction data is not available for this stock yet.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-      <!-- Chart Data -->
-      <script id="prediction-chart-data" type="application/json">
-        {{ prediction_chart_data|safe }}
-      </script>
+  <!-- Line Graph Section -->
+  <div class="p-6 border-t">
+    <h3 class="text-xl font-semibold mb-4">Line Graph – Closing Price Forecast</h3>
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+      <canvas id="line-forecast-chart" class="w-full h-[400px]"></canvas>
+    </div>
+  </div>  
 
-      <!-- Chart Script -->
-      <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Accuracy Comparison Section -->
+  <div class="p-6 border-t">
+    <h3 class="text-xl font-semibold mb-4">Prediction vs Actual – Last 10 Days</h3>
+    <div class="grid grid-cols-2 gap-6">
+      <!-- Left: Candlestick Chart -->
+      <div class="bg-white p-6 rounded-lg shadow-lg">
+        <h4 class="text-md font-semibold mb-2">Candlestick Accuracy</h4>
+        <div id="accuracy-candlestick-chart" class="w-full h-[400px]"></div>
+      </div>
 
+      <!-- Right: Line Graph -->
+      <div class="bg-white p-6 rounded-lg shadow-lg">
+        <h4 class="text-md font-semibold mb-2">Line Graph Accuracy</h4>
+        <canvas id="accuracy-line-chart" class="w-full h-[400px]"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
 
-      <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            if (window.predictionChartInitialized) {
-                console.log("🟠 Chart already initialized. Skipping re-render.");
-                return;
-            }
-            window.predictionChartInitialized = true;
-        
-            const chartEl = document.getElementById("prediction-candlestick-chart");
-            const scriptTag = document.getElementById("prediction-chart-data");
-            const tooltip = document.getElementById("chart-tooltip-container");
-        
-            if (!chartEl || !scriptTag) {
-                console.error("❌ Chart or Data Script not found.");
-                return;
-            }
-        
-            // Optional: Clear any leftover chart content
-            chartEl.innerHTML = "";
-        
-            let rawData = [];
-            try {
-                rawData = JSON.parse(scriptTag.textContent.trim());
-                console.log("✅ Parsed prediction chart data length:", rawData.length);
-            } catch (e) {
-                console.error("❌ Error parsing prediction JSON:", e);
-                return;
-            }
-        
-            const pastCandles = rawData.filter(d => !d.predicted);
-            const predictedCandles = rawData.filter(d => d.predicted);
-        
-            if (!pastCandles.length && !predictedCandles.length) {
-                console.warn("⚠️ No data found.");
-                return;
-            }
-        
-            const chart = LightweightCharts.createChart(chartEl, {
-                width: chartEl.offsetWidth || 800,  // fallback to 800px
-                height: 500,
-                layout: { background: { color: "#fff" }, textColor: "#000" },
-                grid: { vertLines: { color: "#eee" }, horzLines: { color: "#eee" } },
-                timeScale: { timeVisible: true, borderColor: "#ccc" },
-                priceScale: { borderColor: "#ccc" },
-                handleScroll: { mouseWheel: true, pressedMouseMove: true },
-                handleScale: { mouseWheel: true, pinch: true },
-            });
+<!-- Chart Data -->
+<script id="prediction-chart-data" type="application/json">
+  {{ prediction_chart_data|safe }}
+</script>
 
-        
-            const pastSeries = chart.addCandlestickSeries({
-                upColor: "#26a69a", downColor: "#ef5350",
-                borderVisible: false,
-                wickUpColor: "#26a69a", wickDownColor: "#ef5350"
-            });
-        
-            const predictionSeries = chart.addCandlestickSeries({
-                upColor: "orange", downColor: "orange",
-                borderVisible: false,
-                wickUpColor: "orange", wickDownColor: "orange"
-            });
-        
-            pastSeries.setData(pastCandles);
-            predictionSeries.setData(predictedCandles);
-        
-            chart.subscribeCrosshairMove(param => {
-                const past = param.seriesData.get(pastSeries);
-                const predicted = param.seriesData.get(predictionSeries);
-                const d = past || predicted;
-        
-                tooltip.innerHTML = d
-                    ? `<div class="bg-white border p-2 rounded shadow inline-block">
-                        🕯️ <strong>OHLC</strong> | 
-                        Open: ${d.open}, High: ${d.high}, Low: ${d.low}, Close: ${d.close}
-                      </div>`
-                    : "";
-            });
-        
-            chart.timeScale().scrollToPosition(rawData.length, true);
-            window.addEventListener("resize", () => {
-                chart.resize(chartEl.offsetWidth || 800, 500);
-            });
+<!-- Chart Script -->
+<script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        
-            console.log("✅ Prediction chart rendered successfully.");
-        });
-        </script>
-        
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      if (window.predictionChartInitialized) {
+          console.log("🟠 Chart already initialized. Skipping re-render.");
+          return;
+      }
+      window.predictionChartInitialized = true;
+  
+      const chartEl = document.getElementById("prediction-candlestick-chart");
+      const scriptTag = document.getElementById("prediction-chart-data");
+      const tooltip = document.getElementById("chart-tooltip-container");
+      const loadingEl = document.getElementById("chart-loading");
+      const errorEl = document.getElementById("chart-error");
+  
+      if (!chartEl || !scriptTag) {
+          console.error("❌ Chart or Data Script not found.");
+          return;
+      }
+  
+      // Show loading state
+      if (loadingEl) loadingEl.style.display = "flex";
+      if (errorEl) errorEl.style.display = "none";
+  
+      let rawData = [];
+      try {
+          const content = scriptTag.textContent.trim();
+          if (!content) {
+              throw new Error("Empty chart data");
+          }
+          rawData = JSON.parse(content);
+          console.log("✅ Parsed prediction chart data length:", rawData.length);
+      } catch (e) {
+          console.error("❌ Error parsing prediction JSON:", e);
+          if (loadingEl) loadingEl.style.display = "none";
+          if (errorEl) errorEl.style.display = "flex";
+          return;
+      }
+  
+      const pastCandles = rawData.filter(d => !d.predicted);
+      const predictedCandles = rawData.filter(d => d.predicted);
+  
+      if (!pastCandles.length && !predictedCandles.length) {
+          console.warn("⚠️ No data found.");
+          if (loadingEl) loadingEl.style.display = "none";
+          if (errorEl) errorEl.style.display = "flex";
+          return;
+      }
+  
+      // Hide loading state
+      if (loadingEl) loadingEl.style.display = "none";
+  
+      const chart = LightweightCharts.createChart(chartEl, {
+          width: chartEl.offsetWidth || 800,  // fallback to 800px
+          height: 500,
+          layout: { background: { color: "#fff" }, textColor: "#000" },
+          grid: { vertLines: { color: "#eee" }, horzLines: { color: "#eee" } },
+          timeScale: { timeVisible: true, borderColor: "#ccc" },
+          priceScale: { borderColor: "#ccc" },
+          handleScroll: { mouseWheel: true, pressedMouseMove: true },
+          handleScale: { mouseWheel: true, pinch: true },
+      });
 
-        <script>
-          document.addEventListener("DOMContentLoaded", function () {
-            const rawLineData = JSON.parse(document.getElementById("prediction-chart-data").textContent.trim());
-            const pastLine = rawLineData.filter(d => !d.predicted);
-            const predictedLine = rawLineData.filter(d => d.predicted);
-          
-            // Extract date & close for line chart
-            const pastDates = pastLine.map(d => new Date(d.time * 1000).toLocaleDateString());
-            const pastClose = pastLine.map(d => d.close);
-          
-            const predictedDates = predictedLine.map(d => new Date(d.time * 1000).toLocaleDateString());
-            const predictedClose = predictedLine.map(d => d.close);
-          
-            const ctx = document.getElementById('line-forecast-chart').getContext('2d');
-          
-            new Chart(ctx, {
-              type: 'line',
-              data: {
-                labels: [...pastDates, ...predictedDates],
-                datasets: [
-                  {
-                    label: 'Past 30 Days',
-                    data: pastClose,
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'transparent',
-                    tension: 0.3
-                  },
-                  {
-                    label: 'Next 7 Days',
-                    data: Array(pastClose.length).fill(null).concat(predictedClose),
-                    borderColor: 'orange',
-                    backgroundColor: 'transparent',
-                    borderDash: [5, 5],
-                    tension: 0.3
-                  }
-                ]
-              },
-              options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                  x: {
-                    ticks: {
-                      maxTicksLimit: 10,
-                    }
-                  },
-                  y: {
-                    title: {
-                      display: true,
-                      text: 'Closing Price'
-                    }
+  
+      const pastSeries = chart.addCandlestickSeries({
+          upColor: "#26a69a", downColor: "#ef5350",
+          borderVisible: false,
+          wickUpColor: "#26a69a", wickDownColor: "#ef5350"
+      });
+  
+      const predictionSeries = chart.addCandlestickSeries({
+          upColor: "orange", downColor: "orange",
+          borderVisible: false,
+          wickUpColor: "orange", wickDownColor: "orange"
+      });
+  
+      pastSeries.setData(pastCandles);
+      predictionSeries.setData(predictedCandles);
+  
+      chart.subscribeCrosshairMove(param => {
+          const past = param.seriesData.get(pastSeries);
+          const predicted = param.seriesData.get(predictionSeries);
+          const d = past || predicted;
+  
+          tooltip.innerHTML = d
+              ? `<div class="bg-white border p-2 rounded shadow inline-block">
+                  🕯️ <strong>OHLC</strong> | 
+                  Open: ${d.open}, High: ${d.high}, Low: ${d.low}, Close: ${d.close}
+                </div>`
+              : "";
+      });
+  
+      chart.timeScale().scrollToPosition(rawData.length, true);
+      window.addEventListener("resize", () => {
+          chart.resize(chartEl.offsetWidth || 800, 500);
+      });
+
+  
+      console.log("✅ Prediction chart rendered successfully.");
+  });
+  </script>
+  
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      try {
+          const content = document.getElementById("prediction-chart-data").textContent.trim();
+          if (!content) {
+              console.warn("⚠️ No line chart data available");
+              return;
+          }
+
+          const rawLineData = JSON.parse(content);
+          const pastLine = rawLineData.filter(d => !d.predicted);
+          const predictedLine = rawLineData.filter(d => d.predicted);
+        
+          // Extract date & close for line chart
+          const pastDates = pastLine.map(d => new Date(d.time * 1000).toLocaleDateString());
+          const pastClose = pastLine.map(d => d.close);
+        
+          const predictedDates = predictedLine.map(d => new Date(d.time * 1000).toLocaleDateString());
+          const predictedClose = predictedLine.map(d => d.close);
+        
+          const ctx = document.getElementById('line-forecast-chart').getContext('2d');
+        
+          new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: [...pastDates, ...predictedDates],
+              datasets: [
+                {
+                  label: 'Past 30 Days',
+                  data: pastClose,
+                  borderColor: '#3b82f6',
+                  backgroundColor: 'transparent',
+                  tension: 0.3
+                },
+                {
+                  label: 'Next 7 Days',
+                  data: Array(pastClose.length).fill(null).concat(predictedClose),
+                  borderColor: 'orange',
+                  backgroundColor: 'transparent',
+                  borderDash: [5, 5],
+                  tension: 0.3
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: {
+                  ticks: {
+                    maxTicksLimit: 10,
                   }
                 },
-                plugins: {
-                  legend: {
-                    display: true
-                  },
+                y: {
                   title: {
                     display: true,
-                    text: 'Forecast vs History'
+                    text: 'Closing Price'
                   }
                 }
+              },
+              plugins: {
+                legend: {
+                  display: true
+                },
+                title: {
+                  display: true,
+                  text: 'Forecast vs History'
+                }
               }
-            });
+            }
           });
-          </script>
-          
+      } catch (e) {
+          console.error("❌ Error initializing line chart:", e);
+      }
+    });
+    </script>
     
 
 

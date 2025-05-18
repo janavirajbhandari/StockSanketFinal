@@ -1,0 +1,366 @@
+2025-05-10 13:25:40.952069: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-05-10 13:25:48.701798: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+Updating historical data for 587 stocks...
+[1/587] Processing NABIL
+Updated NABIL (1 new rows)
+[2/587] Processing NIMB
+Updated NIMB (1 new rows)
+[3/587] Processing SCB
+Updated SCB (1 new rows)
+[4/587] Processing HBL
+Updated HBL (1 new rows)
+[5/587] Processing SBI
+Updated SBI (1 new rows)
+[6/587] Processing NBB
+No data returned for NBB
+[7/587] Processing EBL
+Updated EBL (1 new rows)
+[8/587] Processing NICA
+Updated NICA (1 new rows)
+[9/587] Processing MBL
+Updated MBL (1 new rows)
+[10/587] Processing LSL
+Updated LSL (1 new rows)
+[11/587] Processing KBL
+Updated KBL (1 new rows)
+[12/587] Processing SBL
+Updated SBL (1 new rows)
+[13/587] Processing YHL
+ Scraping failed for YHL: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//a[text()='Price History']"}
+  (Session info: chrome=135.0.7049.116); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception
+Stacktrace:
+	GetHandleVerifier [0x00007FF6F4075335+78597]
+	GetHandleVerifier [0x00007FF6F4075390+78688]
+	(No symbol) [0x00007FF6F3E291AA]
+	(No symbol) [0x00007FF6F3E7F149]
+	(No symbol) [0x00007FF6F3E7F3FC]
+	(No symbol) [0x00007FF6F3ED2467]
+	(No symbol) [0x00007FF6F3EA712F]
+	(No symbol) [0x00007FF6F3ECF2BB]
+	(No symbol) [0x00007FF6F3EA6EC3]
+	(No symbol) [0x00007FF6F3E703F8]
+	(No symbol) [0x00007FF6F3E71163]
+	GetHandleVerifier [0x00007FF6F431EEED+2870973]
+	GetHandleVerifier [0x00007FF6F4319698+2848360]
+	GetHandleVerifier [0x00007FF6F4336973+2967875]
+	GetHandleVerifier [0x00007FF6F409017A+188746]
+	GetHandleVerifier [0x00007FF6F409845F+222255]
+	GetHandleVerifier [0x00007FF6F407D2B4+111236]
+	GetHandleVerifier [0x00007FF6F407D462+111666]
+	GetHandleVerifier [0x00007FF6F4063589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating YHL: cannot access local variable 'final_df' where it is not associated with a value
+[14/587] Processing SHL
+Updated SHL (1 new rows)
+[15/587] Processing TRH
+Updated TRH (1 new rows)
+[16/587] Processing OHL
+ Scraping failed for OHL: HTTPConnectionPool(host='localhost', port=65161): Read timed out. (read timeout=120)
+Error updating OHL: cannot access local variable 'final_df' where it is not associated with a value
+[17/587] Processing NFD
+No data returned for NFD
+[18/587] Processing NHPC
+Updated NHPC (1 new rows)
+[19/587] Processing BPCL
+Updated BPCL (3 new rows)
+[20/587] Processing CHCL
+Updated CHCL (1 new rows)
+[21/587] Processing STC
+Updated STC (1 new rows)
+[22/587] Processing BBC
+Updated BBC (1 new rows)
+[23/587] Processing NTL
+ Scraping failed for NTL: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//a[text()='Price History']"}
+  (Session info: chrome=135.0.7049.116); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception
+Stacktrace:
+	GetHandleVerifier [0x00007FF6F4075335+78597]
+	GetHandleVerifier [0x00007FF6F4075390+78688]
+	(No symbol) [0x00007FF6F3E291AA]
+	(No symbol) [0x00007FF6F3E7F149]
+	(No symbol) [0x00007FF6F3E7F3FC]
+	(No symbol) [0x00007FF6F3ED2467]
+	(No symbol) [0x00007FF6F3EA712F]
+	(No symbol) [0x00007FF6F3ECF2BB]
+	(No symbol) [0x00007FF6F3EA6EC3]
+	(No symbol) [0x00007FF6F3E703F8]
+	(No symbol) [0x00007FF6F3E71163]
+	GetHandleVerifier [0x00007FF6F431EEED+2870973]
+	GetHandleVerifier [0x00007FF6F4319698+2848360]
+	GetHandleVerifier [0x00007FF6F4336973+2967875]
+	GetHandleVerifier [0x00007FF6F409017A+188746]
+	GetHandleVerifier [0x00007FF6F409845F+222255]
+	GetHandleVerifier [0x00007FF6F407D2B4+111236]
+	GetHandleVerifier [0x00007FF6F407D462+111666]
+	GetHandleVerifier [0x00007FF6F4063589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating NTL: cannot access local variable 'final_df' where it is not associated with a value
+[24/587] Processing NWC
+ Scraping failed for NWC: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//a[text()='Price History']"}
+  (Session info: chrome=135.0.7049.116); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception
+Stacktrace:
+	GetHandleVerifier [0x00007FF6F4075335+78597]
+	GetHandleVerifier [0x00007FF6F4075390+78688]
+	(No symbol) [0x00007FF6F3E291AA]
+	(No symbol) [0x00007FF6F3E7F149]
+	(No symbol) [0x00007FF6F3E7F3FC]
+	(No symbol) [0x00007FF6F3ED2467]
+	(No symbol) [0x00007FF6F3EA712F]
+	(No symbol) [0x00007FF6F3ECF2BB]
+	(No symbol) [0x00007FF6F3EA6EC3]
+	(No symbol) [0x00007FF6F3E703F8]
+	(No symbol) [0x00007FF6F3E71163]
+	GetHandleVerifier [0x00007FF6F431EEED+2870973]
+	GetHandleVerifier [0x00007FF6F4319698+2848360]
+	GetHandleVerifier [0x00007FF6F4336973+2967875]
+	GetHandleVerifier [0x00007FF6F409017A+188746]
+	GetHandleVerifier [0x00007FF6F409845F+222255]
+	GetHandleVerifier [0x00007FF6F407D2B4+111236]
+	GetHandleVerifier [0x00007FF6F407D462+111666]
+	GetHandleVerifier [0x00007FF6F4063589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating NWC: cannot access local variable 'final_df' where it is not associated with a value
+[25/587] Processing NUBL
+Updated NUBL (1 new rows)
+[26/587] Processing CBBL
+Updated CBBL (1 new rows)
+[27/587] Processing PDBL
+No data returned for PDBL
+[28/587] Processing DDBL
+Updated DDBL (1 new rows)
+[29/587] Processing SDBL
+No data returned for SDBL
+[30/587] Processing SANIMA
+Updated SANIMA (1 new rows)
+[31/587] Processing NABBC
+Updated NABBC (1 new rows)
+[32/587] Processing NICL
+Updated NICL (1 new rows)
+[33/587] Processing RBCL
+Updated RBCL (1 new rows)
+[34/587] Processing NLICL
+Updated NLICL (1 new rows)
+[35/587] Processing HEI
+Updated HEI (1 new rows)
+[36/587] Processing UAIL
+Updated UAIL (1 new rows)
+[37/587] Processing SPIL
+Updated SPIL (1 new rows)
+[38/587] Processing NIL
+Updated NIL (1 new rows)
+[39/587] Processing PRIN
+Updated PRIN (1 new rows)
+[40/587] Processing SALICO
+Updated SALICO (1 new rows)
+[41/587] Processing IGI
+Updated IGI (1 new rows)
+[42/587] Processing NLIC
+Updated NLIC (1 new rows)
+[43/587] Processing LICN
+Updated LICN (1 new rows)
+[44/587] Processing SICL
+ Scraping failed for SICL: Message: invalid session id: session deleted as the browser has closed the connection
+from disconnected: not connected to DevTools
+  (Session info: chrome=135.0.7049.116)
+Stacktrace:
+	GetHandleVerifier [0x00007FF6F4075335+78597]
+	GetHandleVerifier [0x00007FF6F4075390+78688]
+	(No symbol) [0x00007FF6F3E291AA]
+	(No symbol) [0x00007FF6F3E14EF5]
+	(No symbol) [0x00007FF6F3E39F04]
+	(No symbol) [0x00007FF6F3EAED0F]
+	(No symbol) [0x00007FF6F3ECEBB2]
+	(No symbol) [0x00007FF6F3EA6EC3]
+	(No symbol) [0x00007FF6F3E703F8]
+	(No symbol) [0x00007FF6F3E71163]
+	GetHandleVerifier [0x00007FF6F431EEED+2870973]
+	GetHandleVerifier [0x00007FF6F4319698+2848360]
+	GetHandleVerifier [0x00007FF6F4336973+2967875]
+	GetHandleVerifier [0x00007FF6F409017A+188746]
+	GetHandleVerifier [0x00007FF6F409845F+222255]
+	GetHandleVerifier [0x00007FF6F407D2B4+111236]
+	GetHandleVerifier [0x00007FF6F407D462+111666]
+	GetHandleVerifier [0x00007FF6F4063589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Updated SICL (59538 new rows)
+[45/587] Processing NFS
+Updated NFS (18 new rows)
+[46/587] Processing BNL
+ Scraping failed for BNL: HTTPConnectionPool(host='localhost', port=52711): Read timed out. (read timeout=120)
+Error updating BNL: cannot access local variable 'final_df' where it is not associated with a value
+[47/587] Processing NLO
+Updated NLO (1 new rows)
+[48/587] Processing NSM
+ Scraping failed for NSM: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//a[text()='Price History']"}
+  (Session info: chrome=135.0.7049.116); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception
+Stacktrace:
+	GetHandleVerifier [0x00007FF6F4075335+78597]
+	GetHandleVerifier [0x00007FF6F4075390+78688]
+	(No symbol) [0x00007FF6F3E291AA]
+	(No symbol) [0x00007FF6F3E7F149]
+	(No symbol) [0x00007FF6F3E7F3FC]
+	(No symbol) [0x00007FF6F3ED2467]
+	(No symbol) [0x00007FF6F3EA712F]
+	(No symbol) [0x00007FF6F3ECF2BB]
+	(No symbol) [0x00007FF6F3EA6EC3]
+	(No symbol) [0x00007FF6F3E703F8]
+	(No symbol) [0x00007FF6F3E71163]
+	GetHandleVerifier [0x00007FF6F431EEED+2870973]
+	GetHandleVerifier [0x00007FF6F4319698+2848360]
+	GetHandleVerifier [0x00007FF6F4336973+2967875]
+	GetHandleVerifier [0x00007FF6F409017A+188746]
+	GetHandleVerifier [0x00007FF6F409845F+222255]
+	GetHandleVerifier [0x00007FF6F407D2B4+111236]
+	GetHandleVerifier [0x00007FF6F407D462+111666]
+	GetHandleVerifier [0x00007FF6F4063589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating NSM: cannot access local variable 'final_df' where it is not associated with a value
+[49/587] Processing NVG
+ Scraping failed for NVG: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//a[text()='Price History']"}
+  (Session info: chrome=135.0.7049.116); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception
+Stacktrace:
+	GetHandleVerifier [0x00007FF6F4075335+78597]
+	GetHandleVerifier [0x00007FF6F4075390+78688]
+	(No symbol) [0x00007FF6F3E291AA]
+	(No symbol) [0x00007FF6F3E7F149]
+	(No symbol) [0x00007FF6F3E7F3FC]
+	(No symbol) [0x00007FF6F3ED2467]
+	(No symbol) [0x00007FF6F3EA712F]
+	(No symbol) [0x00007FF6F3ECF2BB]
+	(No symbol) [0x00007FF6F3EA6EC3]
+	(No symbol) [0x00007FF6F3E703F8]
+	(No symbol) [0x00007FF6F3E71163]
+	GetHandleVerifier [0x00007FF6F431EEED+2870973]
+	GetHandleVerifier [0x00007FF6F4319698+2848360]
+	GetHandleVerifier [0x00007FF6F4336973+2967875]
+	GetHandleVerifier [0x00007FF6F409017A+188746]
+	GetHandleVerifier [0x00007FF6F409845F+222255]
+	GetHandleVerifier [0x00007FF6F407D2B4+111236]
+	GetHandleVerifier [0x00007FF6F407D462+111666]
+	GetHandleVerifier [0x00007FF6F4063589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating NVG: cannot access local variable 'final_df' where it is not associated with a value
+[50/587] Processing KBBL
+ No more pages or unable to click Next.
+Updated KBBL (1204 new rows)
+[51/587] Processing RJM
+ Scraping failed for RJM: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//a[text()='Price History']"}
+  (Session info: chrome=135.0.7049.116); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception
+Stacktrace:
+	GetHandleVerifier [0x00007FF6F4075335+78597]
+	GetHandleVerifier [0x00007FF6F4075390+78688]
+	(No symbol) [0x00007FF6F3E291AA]
+	(No symbol) [0x00007FF6F3E7F149]
+	(No symbol) [0x00007FF6F3E7F3FC]
+	(No symbol) [0x00007FF6F3ED2467]
+	(No symbol) [0x00007FF6F3EA712F]
+	(No symbol) [0x00007FF6F3ECF2BB]
+	(No symbol) [0x00007FF6F3EA6EC3]
+	(No symbol) [0x00007FF6F3E703F8]
+	(No symbol) [0x00007FF6F3E71163]
+	GetHandleVerifier [0x00007FF6F431EEED+2870973]
+	GetHandleVerifier [0x00007FF6F4319698+2848360]
+	GetHandleVerifier [0x00007FF6F4336973+2967875]
+	GetHandleVerifier [0x00007FF6F409017A+188746]
+	GetHandleVerifier [0x00007FF6F409845F+222255]
+	GetHandleVerifier [0x00007FF6F407D2B4+111236]
+	GetHandleVerifier [0x00007FF6F407D462+111666]
+	GetHandleVerifier [0x00007FF6F4063589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating RJM: cannot access local variable 'final_df' where it is not associated with a value
+[52/587] Processing GUFL
+Updated GUFL (18 new rows)
+[53/587] Processing BSM
+ Scraping failed for BSM: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//a[text()='Price History']"}
+  (Session info: chrome=135.0.7049.116); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception
+Stacktrace:
+	GetHandleVerifier [0x00007FF6F4075335+78597]
+	GetHandleVerifier [0x00007FF6F4075390+78688]
+	(No symbol) [0x00007FF6F3E291AA]
+	(No symbol) [0x00007FF6F3E7F149]
+	(No symbol) [0x00007FF6F3E7F3FC]
+	(No symbol) [0x00007FF6F3ED2467]
+	(No symbol) [0x00007FF6F3EA712F]
+	(No symbol) [0x00007FF6F3ECF2BB]
+	(No symbol) [0x00007FF6F3EA6EC3]
+	(No symbol) [0x00007FF6F3E703F8]
+	(No symbol) [0x00007FF6F3E71163]
+	GetHandleVerifier [0x00007FF6F431EEED+2870973]
+	GetHandleVerifier [0x00007FF6F4319698+2848360]
+	GetHandleVerifier [0x00007FF6F4336973+2967875]
+	GetHandleVerifier [0x00007FF6F409017A+188746]
+	GetHandleVerifier [0x00007FF6F409845F+222255]
+	GetHandleVerifier [0x00007FF6F407D2B4+111236]
+	GetHandleVerifier [0x00007FF6F407D462+111666]
+	GetHandleVerifier [0x00007FF6F4063589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating BSM: cannot access local variable 'final_df' where it is not associated with a value
+[54/587] Processing GRU
+ Scraping failed for GRU: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//a[text()='Price History']"}
+  (Session info: chrome=135.0.7049.116); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception
+Stacktrace:
+	GetHandleVerifier [0x00007FF6F4075335+78597]
+	GetHandleVerifier [0x00007FF6F4075390+78688]
+	(No symbol) [0x00007FF6F3E291AA]
+	(No symbol) [0x00007FF6F3E7F149]
+	(No symbol) [0x00007FF6F3E7F3FC]
+	(No symbol) [0x00007FF6F3ED2467]
+	(No symbol) [0x00007FF6F3EA712F]
+	(No symbol) [0x00007FF6F3ECF2BB]
+	(No symbol) [0x00007FF6F3EA6EC3]
+	(No symbol) [0x00007FF6F3E703F8]
+	(No symbol) [0x00007FF6F3E71163]
+	GetHandleVerifier [0x00007FF6F431EEED+2870973]
+	GetHandleVerifier [0x00007FF6F4319698+2848360]
+	GetHandleVerifier [0x00007FF6F4336973+2967875]
+	GetHandleVerifier [0x00007FF6F409017A+188746]
+	GetHandleVerifier [0x00007FF6F409845F+222255]
+	GetHandleVerifier [0x00007FF6F407D2B4+111236]
+	GetHandleVerifier [0x00007FF6F407D462+111666]
+	GetHandleVerifier [0x00007FF6F4063589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating GRU: cannot access local variable 'final_df' where it is not associated with a value
+[55/587] Processing JSM
+ Scraping failed for JSM: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//a[text()='Price History']"}
+  (Session info: chrome=135.0.7049.116); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception
+Stacktrace:
+	GetHandleVerifier [0x00007FF6F4075335+78597]
+	GetHandleVerifier [0x00007FF6F4075390+78688]
+	(No symbol) [0x00007FF6F3E291AA]
+	(No symbol) [0x00007FF6F3E7F149]
+	(No symbol) [0x00007FF6F3E7F3FC]
+	(No symbol) [0x00007FF6F3ED2467]
+	(No symbol) [0x00007FF6F3EA712F]
+	(No symbol) [0x00007FF6F3ECF2BB]
+	(No symbol) [0x00007FF6F3EA6EC3]
+	(No symbol) [0x00007FF6F3E703F8]
+	(No symbol) [0x00007FF6F3E71163]
+	GetHandleVerifier [0x00007FF6F431EEED+2870973]
+	GetHandleVerifier [0x00007FF6F4319698+2848360]
+	GetHandleVerifier [0x00007FF6F4336973+2967875]
+	GetHandleVerifier [0x00007FF6F409017A+188746]
+	GetHandleVerifier [0x00007FF6F409845F+222255]
+	GetHandleVerifier [0x00007FF6F407D2B4+111236]
+	GetHandleVerifier [0x00007FF6F407D462+111666]
+	GetHandleVerifier [0x00007FF6F4063589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating JSM: cannot access local variable 'final_df' where it is not associated with a value

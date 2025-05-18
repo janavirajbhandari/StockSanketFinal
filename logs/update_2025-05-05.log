@@ -1,0 +1,166 @@
+2025-05-05 19:20:22.122234: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-05-05 19:20:33.035097: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+Updating historical data for 587 stocks...
+[1/587] Processing NABIL
+Updated NABIL (1 new rows)
+[2/587] Processing NIMB
+Updated NIMB (1 new rows)
+[3/587] Processing SCB
+Updated SCB (1 new rows)
+[4/587] Processing HBL
+Updated HBL (1 new rows)
+[5/587] Processing SBI
+Updated SBI (1 new rows)
+[6/587] Processing NBB
+No data returned for NBB
+[7/587] Processing EBL
+Updated EBL (1 new rows)
+[8/587] Processing NICA
+Updated NICA (1 new rows)
+[9/587] Processing MBL
+Updated MBL (1 new rows)
+[10/587] Processing LSL
+Updated LSL (1 new rows)
+[11/587] Processing KBL
+Updated KBL (1 new rows)
+[12/587] Processing SBL
+Updated SBL (1 new rows)
+[13/587] Processing YHL
+ Scraping failed for YHL: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//a[text()='Price History']"}
+  (Session info: chrome=135.0.7049.116); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception
+Stacktrace:
+	GetHandleVerifier [0x00007FF6AA995335+78597]
+	GetHandleVerifier [0x00007FF6AA995390+78688]
+	(No symbol) [0x00007FF6AA7491AA]
+	(No symbol) [0x00007FF6AA79F149]
+	(No symbol) [0x00007FF6AA79F3FC]
+	(No symbol) [0x00007FF6AA7F2467]
+	(No symbol) [0x00007FF6AA7C712F]
+	(No symbol) [0x00007FF6AA7EF2BB]
+	(No symbol) [0x00007FF6AA7C6EC3]
+	(No symbol) [0x00007FF6AA7903F8]
+	(No symbol) [0x00007FF6AA791163]
+	GetHandleVerifier [0x00007FF6AAC3EEED+2870973]
+	GetHandleVerifier [0x00007FF6AAC39698+2848360]
+	GetHandleVerifier [0x00007FF6AAC56973+2967875]
+	GetHandleVerifier [0x00007FF6AA9B017A+188746]
+	GetHandleVerifier [0x00007FF6AA9B845F+222255]
+	GetHandleVerifier [0x00007FF6AA99D2B4+111236]
+	GetHandleVerifier [0x00007FF6AA99D462+111666]
+	GetHandleVerifier [0x00007FF6AA983589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating YHL: cannot access local variable 'final_df' where it is not associated with a value
+[14/587] Processing SHL
+Updated SHL (1 new rows)
+[15/587] Processing TRH
+Updated TRH (1 new rows)
+[16/587] Processing OHL
+Updated OHL (1 new rows)
+[17/587] Processing NFD
+No data returned for NFD
+[18/587] Processing NHPC
+Updated NHPC (1 new rows)
+[19/587] Processing BPCL
+Updated BPCL (1 new rows)
+[20/587] Processing CHCL
+Updated CHCL (1 new rows)
+[21/587] Processing STC
+Updated STC (1 new rows)
+[22/587] Processing BBC
+Updated BBC (1 new rows)
+[23/587] Processing NTL
+ Scraping failed for NTL: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//a[text()='Price History']"}
+  (Session info: chrome=135.0.7049.116); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception
+Stacktrace:
+	GetHandleVerifier [0x00007FF6AA995335+78597]
+	GetHandleVerifier [0x00007FF6AA995390+78688]
+	(No symbol) [0x00007FF6AA7491AA]
+	(No symbol) [0x00007FF6AA79F149]
+	(No symbol) [0x00007FF6AA79F3FC]
+	(No symbol) [0x00007FF6AA7F2467]
+	(No symbol) [0x00007FF6AA7C712F]
+	(No symbol) [0x00007FF6AA7EF2BB]
+	(No symbol) [0x00007FF6AA7C6EC3]
+	(No symbol) [0x00007FF6AA7903F8]
+	(No symbol) [0x00007FF6AA791163]
+	GetHandleVerifier [0x00007FF6AAC3EEED+2870973]
+	GetHandleVerifier [0x00007FF6AAC39698+2848360]
+	GetHandleVerifier [0x00007FF6AAC56973+2967875]
+	GetHandleVerifier [0x00007FF6AA9B017A+188746]
+	GetHandleVerifier [0x00007FF6AA9B845F+222255]
+	GetHandleVerifier [0x00007FF6AA99D2B4+111236]
+	GetHandleVerifier [0x00007FF6AA99D462+111666]
+	GetHandleVerifier [0x00007FF6AA983589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating NTL: cannot access local variable 'final_df' where it is not associated with a value
+[24/587] Processing NWC
+ Scraping failed for NWC: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//a[text()='Price History']"}
+  (Session info: chrome=135.0.7049.116); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception
+Stacktrace:
+	GetHandleVerifier [0x00007FF6AA995335+78597]
+	GetHandleVerifier [0x00007FF6AA995390+78688]
+	(No symbol) [0x00007FF6AA7491AA]
+	(No symbol) [0x00007FF6AA79F149]
+	(No symbol) [0x00007FF6AA79F3FC]
+	(No symbol) [0x00007FF6AA7F2467]
+	(No symbol) [0x00007FF6AA7C712F]
+	(No symbol) [0x00007FF6AA7EF2BB]
+	(No symbol) [0x00007FF6AA7C6EC3]
+	(No symbol) [0x00007FF6AA7903F8]
+	(No symbol) [0x00007FF6AA791163]
+	GetHandleVerifier [0x00007FF6AAC3EEED+2870973]
+	GetHandleVerifier [0x00007FF6AAC39698+2848360]
+	GetHandleVerifier [0x00007FF6AAC56973+2967875]
+	GetHandleVerifier [0x00007FF6AA9B017A+188746]
+	GetHandleVerifier [0x00007FF6AA9B845F+222255]
+	GetHandleVerifier [0x00007FF6AA99D2B4+111236]
+	GetHandleVerifier [0x00007FF6AA99D462+111666]
+	GetHandleVerifier [0x00007FF6AA983589+5465]
+	BaseThreadInitThunk [0x00007FFA7C2EE8D7+23]
+	RtlUserThreadStart [0x00007FFA7DE3C5DC+44]
+
+Error updating NWC: cannot access local variable 'final_df' where it is not associated with a value
+[25/587] Processing NUBL
+Updated NUBL (1 new rows)
+[26/587] Processing CBBL
+Updated CBBL (1 new rows)
+[27/587] Processing PDBL
+No data returned for PDBL
+[28/587] Processing DDBL
+Updated DDBL (1 new rows)
+[29/587] Processing SDBL
+No data returned for SDBL
+[30/587] Processing SANIMA
+Updated SANIMA (1 new rows)
+[31/587] Processing NABBC
+Updated NABBC (1 new rows)
+[32/587] Processing NICL
+Updated NICL (1 new rows)
+[33/587] Processing RBCL
+Updated RBCL (1 new rows)
+[34/587] Processing NLICL
+Updated NLICL (1 new rows)
+[35/587] Processing HEI
+Updated HEI (1 new rows)
+[36/587] Processing UAIL
+Updated UAIL (1 new rows)
+[37/587] Processing SPIL
+Updated SPIL (1 new rows)
+[38/587] Processing NIL
+Updated NIL (1 new rows)
+[39/587] Processing PRIN
+Updated PRIN (1 new rows)
+[40/587] Processing SALICO
+Updated SALICO (1 new rows)
+[41/587] Processing IGI
+ No more pages or unable to click Next.
+Updated IGI (282275 new rows)
+[42/587] Processing NLIC
+ No more pages or unable to click Next.
+No data returned for NLIC
+[43/587] Processing LICN
+Updated LICN (15 new rows)

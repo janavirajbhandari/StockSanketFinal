@@ -13,8 +13,10 @@
 .ticker-wrapper {
   overflow: hidden;
   position: relative;
-  height: 100px; /* adjust as needed */
-  border-radius: 0.375rem; /* rounded-md */
+
+  height: 100px;
+  border-radius: 0.375rem;
+
   width: 1290px;
   bottom: 11px;
 }
@@ -26,14 +28,45 @@
   padding: 1rem;
   align-items: center;
 }
+
+/* ✅ Fixed dropdown styling */
+#home-search-results a {
+  display: block;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #374151;
+  border-bottom: 1px solid #eee;
+  text-decoration: none;
+  text-align: left;
+}
+#home-search-results a:hover {
+  background-color: #f3f4f6;
+  color: #1d4ed8;
+}
+#home-search-results {
+  max-height: 260px;
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: none;
+}
+
 </style>
 
 <div class="flex">
   {% include 'sidebar.html' %}
-  
+
+
   <main class="flex-1 p-6 lg:ml-[180px] mt-16">
 
-    <!-- ✅ Ticker Box -->
+    <!-- ✅ Ticker -->
     <div class="ticker-wrapper w-full mb-6">
       <div class="animate-ticker">
 
@@ -50,20 +83,30 @@
       </div>
     </div>
 
-    <!-- Hero Section -->
-    <div class="flex flex-col items-center text-center mt-10">
-      <h1 class="text-[#001F7B] text-4xl font-bold">
-        Search for a stock to start your analysis
-      </h1>
-      <div class="w-96 flex items-center bg-gray-100 px-4 py-3 rounded-full shadow-lg mt-4">
-        <span class="material-icons text-gray-500 text-lg">search</span>
-        <input type="text" placeholder="Search by Symbol or Company Name" 
-               class="w-full outline-none bg-transparent ml-3 text-base">
-        <span class="material-icons text-gray-500 text-lg">arrow_drop_down</span>
-      </div>
-    </div>
 
-    <!-- Tables -->
+  <!-- Hero and Search (Centered Heading + Search Bar) -->
+<div class="flex flex-col items-center text-center mt-10">
+    <h1 class="text-[#001F7B] text-4xl font-bold mb-3">
+      Search for a stock to start your analysis
+    </h1>
+    <p class="text-gray-600 text-lg mb-6 max-w-2xl">
+      Find real-time data, compare performance, and build your strategy — one stock at a time.
+    </p>
+  
+    <!-- This container must be relative to anchor the dropdown -->
+    <div class="relative w-96">
+      <div class="flex items-center bg-gray-100 px-4 py-3 rounded-full shadow-lg">
+        <span class="material-icons text-gray-500 text-lg">search</span>
+        <input type="text" id="stock-searchss" placeholder="Search by Symbol or Company Name" 
+               class="w-full outline-none bg-transparent ml-2 text-sm relative z-10">
+      </div>
+  
+      <!-- ✅ Left-aligned dropdown box -->
+      <div id="home-search-results" class="hidden absolute left-0 right-0 mt-1 rounded-md bg-white z-30 shadow-md border border-gray-200"></div>
+    </div>
+  </div>
+  
+
     <div class="flex justify-between mt-16 px-8">
       <!-- Top Gainers -->
       <div class="w-1/2 pr-4">
@@ -74,24 +117,27 @@
             <thead class="bg-gray-200">
               <tr>
 
-                <th class="border border-gray-300 px-4 py-2 align-middle h-16"><b>Symbol</b></th>
-                <th class="border border-gray-300 px-4 py-2 align-middle h-16">Name</th>
-                <th class="border border-gray-300 px-4 py-2 align-middle h-16">Price</th>
-                <th class="border border-gray-300 px-4 py-2 align-middle h-16">Percentage</th>
+                <th class="border border-gray-300 px-4 py-2 h-16">Symbol</th>
+                <th class="border border-gray-300 px-4 py-2 h-16">Name</th>
+                <th class="border border-gray-300 px-4 py-2 h-16">Price</th>
+                <th class="border border-gray-300 px-4 py-2 h-16">Percentage</th>
+
               </tr>
             </thead>
             <tbody>
               {% for item in top_gainers %}
               <tr class="hover:bg-gray-100">
-                <td class="border border-gray-300 px-4 py-2 align-middle text-blue-600 h-16""> <a href="{% url 'stockDetail' %}?symbol={{ item.symbol|urlencode }}">{{ item.symbol }}</td>
-                <td class="border border-gray-300 px-4 py-2 align-middle h-16">{{ item.name }}</td>
-                <td class="border border-gray-300 px-4 py-2 align-middle h-16">{{ item.price }}</td>
-                <td class="border border-gray-300 px-4 py-2 align-middle h-16 text-green-600">{{ item.percentage }}%</td>
+
+                <td class="border border-gray-300 px-4 py-2 text-blue-600 h-16">
+                  <a href="{% url 'stockDetail' %}?symbol={{ item.symbol|urlencode }}">{{ item.symbol }}</a>
+                </td>
+                <td class="border border-gray-300 px-4 py-2 h-16">{{ item.name }}</td>
+                <td class="border border-gray-300 px-4 py-2 h-16">{{ item.price }}</td>
+                <td class="border border-gray-300 px-4 py-2 h-16 text-green-600">{{ item.percentage }}%</td>
               </tr>
               {% empty %}
-              <tr>
-                <td colspan="4" class="text-center text-gray-500 py-4">No Data Available</td>
-              </tr>
+              <tr><td colspan="4" class="text-center text-gray-500 py-4">No Data Available</td></tr>
+
               {% endfor %}
             </tbody>
           </table>
@@ -106,24 +152,28 @@
           <table class="w-full border-collapse border border-gray-300">
             <thead class="bg-gray-200">
               <tr>
-                <th class="border border-gray-300 px-4 py-2 align-middle h-16">Symbol</th>
-                <th class="border border-gray-300 px-4 py-2 align-middle h-16">Name</th>
-                <th class="border border-gray-300 px-4 py-2 align-middle h-16">Price</th>
-                <th class="border border-gray-300 px-4 py-2 align-middle h-16">Percentage</th>
+
+                <th class="border border-gray-300 px-4 py-2 h-16">Symbol</th>
+                <th class="border border-gray-300 px-4 py-2 h-16">Name</th>
+                <th class="border border-gray-300 px-4 py-2 h-16">Price</th>
+                <th class="border border-gray-300 px-4 py-2 h-16">Percentage</th>
+
               </tr>
             </thead>
             <tbody>
               {% for item in top_losers %}
               <tr class="hover:bg-gray-100">
-                <td class="border border-gray-300 px-4 py-2 text-blue-600 align-middle h-16"><a href="{% url 'stockDetail' %}?symbol={{ item.symbol|urlencode }}">{{ item.symbol }}</a></td>
-                <td class="border border-gray-300 px-4 py-2 align-middle h-16">{{ item.name }}</td>
-                <td class="border border-gray-300 px-4 py-2 align-middle h-16">{{ item.price }}</td>
-                <td class="border border-gray-300 px-4 py-2 align-middle h-16 text-red-600">{{ item.percentage }}%</td>
+
+                <td class="border border-gray-300 px-4 py-2 text-blue-600 h-16">
+                  <a href="{% url 'stockDetail' %}?symbol={{ item.symbol|urlencode }}">{{ item.symbol }}</a>
+                </td>
+                <td class="border border-gray-300 px-4 py-2 h-16">{{ item.name }}</td>
+                <td class="border border-gray-300 px-4 py-2 h-16">{{ item.price }}</td>
+                <td class="border border-gray-300 px-4 py-2 h-16 text-red-600">{{ item.percentage }}%</td>
               </tr>
               {% empty %}
-              <tr>
-                <td colspan="4" class="text-center text-gray-500 py-4">No Data Available</td>
-              </tr>
+              <tr><td colspan="4" class="text-center text-gray-500 py-4">No Data Available</td></tr>
+
               {% endfor %}
             </tbody>
           </table>
@@ -131,7 +181,6 @@
       </div>
     </div>
 
-    <!-- News Section -->
     <div class="mt-10 px-8">
       <a href="{% url 'news' %}">
         <div class="flex flex-row items-center space-x-2">
@@ -141,23 +190,62 @@
       </a>
       <div class="mt-4">
         {% for news in recent_news %}
-            <div class="flex items-center justify-between border-b py-3 hover:bg-gray-100 transition">
-            <span class="text-gray-500 text-sm w-32">{{ news.date }}</span>
-            <p class="text-blue-600 text-sm font-medium flex-1">
-                <a href="{% url 'news_detail' article.csv_index %}">
-                    
-                    {{ news.title }}
-                </a>
-                      
-            
-            </p>
-            </div>
-            {% empty %}
-            <p class="text-gray-500 text-center py-4">No news available</p>
-            {% endfor %}
 
+        <div class="flex items-center justify-between border-b py-3 hover:bg-gray-100 transition">
+          <span class="text-gray-500 text-sm w-32">{{ news.date }}</span>
+          <p class="text-blue-600 text-sm font-medium flex-1">
+            <a href="{% url 'news_detail' news.csv_index %}">{{ news.title }}</a>
+          </p>
+        </div>
+        {% empty %}
+        <p class="text-gray-500 text-center py-4">No news available</p>
+        {% endfor %}
       </div>
     </div>
+
   </main>
 </div>
+
+<!-- ✅ JS -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById("stock-searchss");
+    const resultsBox = document.getElementById("home-search-results");
+
+    searchInput.addEventListener("input", function () {
+        const query = this.value;
+        if (query.length === 0) {
+            resultsBox.innerHTML = "";
+            resultsBox.style.display = "none";
+            return;
+        }
+
+        fetch(`/ajax/search-stocks-for-home/?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                const results = data.results;
+                if (results.length === 0) {
+                    resultsBox.innerHTML = "<div class='px-4 py-2 text-gray-500'>No matches</div>";
+                    resultsBox.style.display = "block";
+                    return;
+                }
+
+                resultsBox.innerHTML = results.map(item => `
+                    <a href="/stockDetail/?symbol=${item.symbol}">
+                        <span class="font-semibold text-blue-600">(${item.symbol})</span> ${item.name}
+                    </a>
+                `).join("");
+
+                resultsBox.style.display = "block";
+            });
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
+            resultsBox.style.display = "none";
+        }
+    });
+});
+</script>
+
 {% endblock %}

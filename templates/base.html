@@ -7,8 +7,30 @@
     <title>{% block title %}My Django App{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="{% static 'css/toast.css' %}">
+    <!-- Add DM Sans font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'dm-sans': ['"DM Sans"', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
 
     <style>
+    /* Apply DM Sans to everything */
+    * {
+        font-family: 'DM Sans', sans-serif;
+    }
+
     @keyframes breathing {
         0%, 100% {
             transform: scale(1);
@@ -25,22 +47,25 @@
     }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 font-dm-sans">
 
     <!-- Breathing Logo Loader -->
     <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center bg-white transition-opacity duration-500">
         <img src="{% static 'logo.png' %}" alt="Stock Logo" class="w-40 h-20 animate-breathing">
     </div>
     
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
 
     {% block content %}{% endblock %}
 
+    <script src="{% static 'js/notifications.js' %}" defer></script>
     <script>
         window.addEventListener("load", () => {
             const loader = document.getElementById("page-loader");
             if (loader) {
                 loader.classList.add("opacity-0", "transition-opacity", "duration-500");
-                setTimeout(() => loader.style.display = "none", 500);  // Wait for fade-out to complete
+                setTimeout(() => loader.style.display = "none", 500);
             }
         });
     </script>

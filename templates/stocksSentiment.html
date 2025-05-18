@@ -1,122 +1,127 @@
-<div class="p-6 bg-white mx-auto w-[1290px] ml-[210px] shadow-lg rounded-lg">
+<div class="bg-white shadow-lg rounded-lg">
   {% if user.is_authenticated %}
+  <div class="p-6">
+    <!-- FLEX WRAPPER for Sentiment & Breakdown -->
+    <div class="flex gap-7">
+      <!-- LEFT: Overall Sentiment in white box -->
+      <div class="bg-white shadow-md p-4 rounded-md w-[280px]">
+        <h2 class="text-xl font-semibold text-gray-500 mb-3">Overall Sentiment</h2>
+        <div class="flex flex-col items-center text-center">
+          <div class="w-[180px] h-[180px] mb-2 mt-6">
+            <canvas id="donutChart"
+                    data-positive="{{ positive_percent|default:0 }}"
+                    data-neutral="{{ neutral_percent|default:0 }}"
+                    data-negative="{{ negative_percent|default:0 }}"
+                    class="w-full h-full"></canvas>
+          </div>
 
-  <!-- FLEX WRAPPER for Sentiment & Breakdown -->
-  <div class="flex gap-7 mb-10">
-
-    <!-- LEFT: Overall Sentiment in white box -->
-    <div class="bg-white shadow-md p-4 rounded-md w-[280px]">
-      <h2 class="text-xl font-semibold text-gray-500 mb-3">Overall Sentiment</h2>
-      <div class="flex flex-col items-center text-center">
-        <div class="w-[180px] h-[180px] mb-2 mt-6">
-          <canvas id="donutChart"
-                  data-positive="{{ positive_percent|default:0 }}"
-                  data-neutral="{{ neutral_percent|default:0 }}"
-                  data-negative="{{ negative_percent|default:0 }}"
-                  class="w-full h-full"></canvas>
-        </div>
-
-        {% if top_sentiment_label == 'positive' %}
-          <p class="text-4xl font-bold text-green-600 mt-3 ">
-            {{ top_sentiment_value|default:0|floatformat:"2" }}%
-          </p>
-          <p class="text-base font-semibold text-green-600">Positive</p>
-        {% elif top_sentiment_label == 'neutral' %}
-          <p class="text-4xl font-bold text-yellow-500 mt-3 ">
-            {{ top_sentiment_value|default:0|floatformat:"2" }}%
-          </p>
-          <p class="text-base font-semibold text-yellow-500">Neutral</p>
-        {% else %}
-          <p class="text-4xl font-bold text-red-500 mt-3 ">
-            {{ top_sentiment_value|default:0|floatformat:"2" }}%
-          </p>
-          <p class="text-base font-semibold text-red-500">Negative</p>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- RIGHT: Sentiment Breakdown and Related News -->
-    <div class="flex-1">
-      <h2 class="text-2xl font-semibold mb-4">Sentiment Breakdown</h2>
-      <p class="text-sm text-gray-600 mb-2">
-        Based on <span class="font-bold">{{ total_articles }}</span> recent articles
-      </p>
-      <div class="flex flex-wrap gap-6 text-sm mb-6">
-        <div class="flex items-center gap-2">
-          <span class="inline-block w-3 h-3 rounded-full bg-green-500"></span>
-          Positive {{ positive_percent }}%
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="inline-block w-3 h-3 rounded-full bg-yellow-400"></span>
-          Neutral {{ neutral_percent }}%
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="inline-block w-3 h-3 rounded-full bg-red-500"></span>
-          Negative {{ negative_percent }}%
+          {% if top_sentiment_label == 'positive' %}
+            <p class="text-4xl font-bold text-green-600 mt-3">
+              {{ top_sentiment_value|default:0|floatformat:"2" }}%
+            </p>
+            <p class="text-base font-semibold text-green-600">Positive</p>
+          {% elif top_sentiment_label == 'neutral' %}
+            <p class="text-4xl font-bold text-yellow-500 mt-3">
+              {{ top_sentiment_value|default:0|floatformat:"2" }}%
+            </p>
+            <p class="text-base font-semibold text-yellow-500">Neutral</p>
+          {% else %}
+            <p class="text-4xl font-bold text-red-500 mt-3">
+              {{ top_sentiment_value|default:0|floatformat:"2" }}%
+            </p>
+            <p class="text-base font-semibold text-red-500">Negative</p>
+          {% endif %}
         </div>
       </div>
 
-      <h3 class="text-lg font-semibold mb-4">Related News</h3>
-      <ul class="space-y-4 text-sm">
-        {% for article in top_news %}
-          <li>
-            <span class="text-gray-500">{{ article.timestamp }}</span> -
-            <a href="{% url 'news_detail' article.csv_index %}" class="text-blue-600 hover:underline">{{ article.title }}</a>
-            {% if article.tag == "positive" %}
-              <span class="ml-2 text-green-600 text-xs font-semibold">🟢 Top Positive News</span>
-            {% elif article.tag == "negative" %}
-              <span class="ml-2 text-red-600 text-xs font-semibold">🔴 Top Negative News</span>
-            {% endif %}
-          </li>
-        {% endfor %}
+      <!-- RIGHT: Sentiment Breakdown and Related News -->
+      <div class="flex-1">
+        <h2 class="text-2xl font-semibold mb-4">Sentiment Breakdown</h2>
+        <p class="text-sm text-gray-600 mb-2">
+          Based on <span class="font-bold">{{ total_articles }}</span> recent articles
+        </p>
+        <div class="flex flex-wrap gap-6 text-sm mb-6">
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-3 h-3 rounded-full bg-green-500"></span>
+            Positive {{ positive_percent }}%
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-3 h-3 rounded-full bg-yellow-400"></span>
+            Neutral {{ neutral_percent }}%
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-3 h-3 rounded-full bg-red-500"></span>
+            Negative {{ negative_percent }}%
+          </div>
+        </div>
 
-        {% for article in extra_news %}
-          <li>
-            <span class="text-gray-500">{{ article.timestamp }}</span> -
-            <a href="{% url 'news_detail' article.csv_index %}" class="text-blue-600 hover:underline">{{ article.title }}</a>
-          </li>
-        {% endfor %}
-      </ul>
+        <h3 class="text-lg font-semibold mb-4">Related News</h3>
+        <ul class="space-y-4 text-sm">
+          {% for article in top_news %}
+            <li>
+              <span class="text-gray-500">{{ article.timestamp }}</span> -
+              <a href="{% url 'news_detail' article.csv_index %}" class="text-blue-600 hover:underline">{{ article.title }}</a>
+              {% if article.tag == "positive" %}
+                <span class="ml-2 text-green-600 text-xs font-semibold">🟢 Top Positive News</span>
+              {% elif article.tag == "negative" %}
+                <span class="ml-2 text-red-600 text-xs font-semibold">🔴 Top Negative News</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+
+          {% for article in extra_news %}
+            <li>
+              <span class="text-gray-500">{{ article.timestamp }}</span> -
+              <a href="{% url 'news_detail' article.csv_index %}" class="text-blue-600 hover:underline">{{ article.title }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
     </div>
-  </div>
 
-  <!-- BAR CHART -->
-  <div class="mt-10">
-    <h3 class="text-lg font-semibold mb-2">Sentiment by Date</h3>
-    <canvas id="barChart"
-            data-labels='{{ bar_labels|safe }}'
-            data-positive='{{ bar_data.positive|safe }}'
-            data-neutral='{{ bar_data.neutral|safe }}'
-            data-negative='{{ bar_data.negative|safe }}'
-            class="w-full h-64"></canvas>
-  </div>
+    <!-- BAR CHART -->
+    <div class="mt-10 p-6 border-t">
+      <h3 class="text-lg font-semibold mb-4">Sentiment by Date</h3>
+      <div class="bg-white p-6 rounded-lg shadow-lg">
+        <canvas id="barChart"
+                data-labels='{{ bar_labels|safe }}'
+                data-positive='{{ bar_data.positive|safe }}'
+                data-neutral='{{ bar_data.neutral|safe }}'
+                data-negative='{{ bar_data.negative|safe }}'
+                class="w-full h-64"></canvas>
+      </div>
+    </div>
 
-  <!-- LINE CHART -->
-  <div class="mt-10 relative">
-    <h3 class="text-lg font-semibold mb-2">Sentiment Score Over Time</h3>
-    <span class="absolute top-0 right-0 text-xs text-gray-500">Last updated: {{ last_updated }}</span>
-    <canvas id="lineChart"
-            data-labels='{{ line_sentiment_labels|safe }}'
-            data-scores='{{ line_sentiment_scores|safe }}'
-            class="w-full h-48"></canvas>
+    <!-- LINE CHART -->
+    <div class="p-6 border-t relative">
+      <h3 class="text-lg font-semibold mb-4">Sentiment Score Over Time</h3>
+      <span class="absolute top-6 right-6 text-xs text-gray-500">Last updated: {{ last_updated }}</span>
+      <div class="bg-white p-6 rounded-lg shadow-lg">
+        <canvas id="lineChart"
+                data-labels='{{ line_sentiment_labels|safe }}'
+                data-scores='{{ line_sentiment_scores|safe }}'
+                class="w-full h-48"></canvas>
+      </div>
+    </div>
   </div>
 
   {% else %}
   <!-- NOT LOGGED IN -->
-  <div class="relative bg-gray-100 p-6 rounded-lg shadow-md mt-6">
-    <div class="blur-sm pointer-events-none select-none">
-      <h2 class="text-lg font-semibold text-gray-300">Stock Sentiment</h2>
-      <canvas id="lockedChart" class="w-full h-48"></canvas>
-    </div>
-    <div class="absolute inset-0 z-10 flex flex-col justify-center items-center">
-      <span class="material-icons text-gray-700 text-6xl mb-2">lock</span>
-      <p class="text-gray-700 text-lg font-semibold">You must log in to access this feature.</p>
-      <a href="{% url 'login' %}" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Log In</a>
+  <div class="p-6">
+    <div class="relative bg-gray-100 rounded-lg shadow-md">
+      <div class="blur-sm pointer-events-none select-none p-6">
+        <h2 class="text-lg font-semibold text-gray-300">Stock Sentiment</h2>
+        <canvas id="lockedChart" class="w-full h-48"></canvas>
+      </div>
+      <div class="absolute inset-0 z-10 flex flex-col justify-center items-center">
+        <span class="material-icons text-gray-700 text-6xl mb-2">lock</span>
+        <p class="text-gray-700 text-lg font-semibold">You must log in to access this feature.</p>
+        <a href="{% url 'login' %}" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Log In</a>
+      </div>
     </div>
   </div>
   {% endif %}
 </div>
-
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {

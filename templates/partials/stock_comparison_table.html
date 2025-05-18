@@ -1,0 +1,76 @@
+<!-- Stock Data Table -->
+<div id="stock-table-container" class="hidden mt-8 bg-white p-6 shadow-lg rounded-lg w-full relative">
+    <!-- Loading Spinner (Inside table container) -->
+    <div id="table-loading" class="absolute inset-0 bg-white bg-opacity-75 flex justify-center items-center z-10" style="display: none;">
+        <div class="flex flex-col items-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="mt-2 text-gray-600">Loading market data...</span>
+        </div>
+    </div>
+
+    <h2 class="text-xl font-bold mb-4 text-[#001F7B] text-center">Stock Comparison</h2>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+                <tr>
+                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symbol</th>
+                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</th>
+                    <th class="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Market Cap</th>
+                    <th class="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Price</th>
+                    <th class="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">% Change</th>
+                    <th class="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
+                    <th class="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Turnover</th>
+                </tr>
+            </thead>
+            <tbody id="stock-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Function to update table with market data
+    function updateTableData(symbol, data) {
+        const tableBody = document.getElementById("stock-table-body");
+        // Remove any existing row for this symbol first
+        const existingRow = document.querySelector(`tr[data-symbol="${symbol}"]`);
+        if (existingRow) {
+            existingRow.remove();
+        }
+        
+        const row = document.createElement('tr');
+        row.setAttribute('data-symbol', symbol);
+        
+        // Show table container immediately
+        document.getElementById("stock-table-container").classList.remove("hidden");
+
+        // Create and update the row
+        const changeValue = parseFloat(data.change || 0);
+        const changeColor = changeValue < 0 ? 'text-red-600' : 'text-green-600';
+        const changeSign = changeValue > 0 ? '+' : '';
+
+        row.className = 'hover:bg-gray-50 transition-colors';
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${symbol}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${data.company || "N/A"}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${data.market_cap || "N/A"}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${data.price || "N/A"}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm ${changeColor} font-semibold text-right">${changeValue ? `${changeSign}${changeValue}%` : "N/A"}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${data.volume || "N/A"}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${data.turnover || "N/A"}</td>
+        `;
+        tableBody.appendChild(row);
+    }
+
+    // Function to remove stock from table
+    function removeStockFromTable(symbol) {
+        const row = document.querySelector(`tr[data-symbol="${symbol}"]`);
+        if (row) {
+            row.remove();
+        }
+        // Hide table container if no stocks are left
+        if (document.getElementById("stock-table-body").children.length === 0) {
+            document.getElementById("stock-table-container").classList.add("hidden");
+        }
+    }
+</script> 

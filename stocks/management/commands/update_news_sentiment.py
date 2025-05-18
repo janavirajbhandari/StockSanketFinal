@@ -5,151 +5,227 @@ import os
 import time
 import pandas as pd
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 from deep_translator import GoogleTranslator
+from django.core.management.base import BaseCommand
+from stocks.models import Stock
+import re
 
-
-def dismiss_alert_if_present(driver):
-    try:
-        alert = driver.switch_to.alert
-        print("⚠️ Dismissing unexpected alert...")
-        alert.dismiss()
-        time.sleep(1)
-    except NoAlertPresentException:
-        pass
-
+CSV_PATH = "merolagani_news.csv"
+MATCHED_PATH = "stock_sentiment_news.csv"
+NOTEBOOK_PATH = "stock_sentiment_score.ipynb"
 
 class Command(BaseCommand):
-    help = "Scrape latest news from merolagani.com and update sentiment data."
+    help = "Updates news sentiment from Merolagani"
 
     def handle(self, *args, **kwargs):
-        NEWS_FILE = "merolagani_news.csv"
-        SENTIMENT_FILE = "stock_sentiment_news.csv"
+        print("🚀 Starting news sentiment update...")
+        scrape_latest_news()
+        translate_and_match_news()
+        run_sentiment_notebook()
+        print("✅ News sentiment update complete.")
 
-        # Load already scraped titles
-        existing_titles = set()
-        if os.path.exists(NEWS_FILE):
-            existing_titles = set(pd.read_csv(NEWS_FILE)["title"].dropna().tolist())
+def clean_company_name(name):
+    """Clean company name for better matching"""
+    # Remove common words that might interfere with matching
+    common_words = ['limited', 'ltd', 'company', 'bank', 'finance', 'development', 'holdings']
+    name = name.lower()
+    for word in common_words:
+        name = name.replace(word, '').strip()
+    # Remove special characters and extra spaces
+    name = re.sub(r'[^a-z0-9\s]', '', name)
+    return ' '.join(name.split())
 
-        # Get all company names
-        company_names = list(Stock.objects.values_list("company_name", flat=True))
+def scrape_latest_news():
+    print("📰 Starting Merolagani News Scraper...")
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Run in headless mode
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--window-size=1920,1080")
 
-        # Setup Selenium
-        options = Options()
-        options.add_argument("--window-size=1920,1080")
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-        driver.get("https://merolagani.com/NewsList.aspx?catid=all")
-        time.sleep(2)
-        dismiss_alert_if_present(driver)
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+    wait = WebDriverWait(driver, 10)
 
-        # Scrape loop
-        all_news = []
-        new_titles = set()
-        load_attempts = 0
-        MAX_ATTEMPTS = 50
+    driver.get("https://merolagani.com/NewsList.aspx")
+    time.sleep(2)
 
-        while True:
-            news_cards = driver.find_elements(By.CSS_SELECTOR, ".media-news")
-            previous_count = len(news_cards)
+    news_list = []
+    seen_links = set()
 
-            for card in news_cards:
+    # Load existing news to avoid duplicates
+    if os.path.exists(CSV_PATH):
+        existing_df = pd.read_csv(CSV_PATH)
+        seen_links = set(existing_df["link"])
+
+    attempt = 0
+    MAX_ATTEMPTS = 50
+
+    while attempt < MAX_ATTEMPTS:
+        try:
+            news_blocks = driver.find_elements(By.CSS_SELECTOR, ".media-news")
+
+            for block in news_blocks:
                 try:
-                    title_el = card.find_element(By.CSS_SELECTOR, "h4.media-title a")
-                    title = title_el.text.strip()
-
-                    if title in existing_titles or title in new_titles:
+                    title_el = block.find_element(By.CSS_SELECTOR, "h4.media-title a")
+                    link = title_el.get_attribute("href")
+                    
+                    if link in seen_links:
                         continue
 
-                    link = title_el.get_attribute("href")
-                    date = card.find_element(By.CSS_SELECTOR, "span.media-label").text.strip()
-                    image = card.find_element(By.CSS_SELECTOR, ".media-wrap img").get_attribute("src")
+                    title = title_el.text.strip()
+                    date = block.find_element(By.CSS_SELECTOR, "span.media-label").text.strip()
+                    
+                    # Get full article text for better context
+                    try:
+                        content_el = block.find_element(By.CSS_SELECTOR, ".media-content")
+                        content = content_el.text.strip()
+                    except:
+                        content = ""
 
-                    all_news.append({
+                    news_list.append({
                         "title": title,
+                        "content": content,
                         "link": link,
                         "date": date,
-                        "image": image
                     })
-                    new_titles.add(title)
+                    seen_links.add(link)
+                    print(f"✅ Scraped: {title[:100]}...")
 
-                except Exception:
+                except Exception as e:
+                    print(f"⚠️ Error scraping news block: {e}")
                     continue
 
             try:
                 load_more = driver.find_element(By.XPATH, "//a[contains(text(),'Load More')]")
                 if load_more.is_displayed():
-                    driver.execute_script("arguments[0].scrollIntoView(true);", load_more)
                     driver.execute_script("arguments[0].click();", load_more)
-                    dismiss_alert_if_present(driver)
-                    print("🔁 Clicked 'Load More'")
-                    time.sleep(2)
-
-                    retries = 0
-                    while retries < 5:
-                        current_count = len(driver.find_elements(By.CSS_SELECTOR, ".media-news"))
-                        if current_count > previous_count:
-                            break
-                        time.sleep(1)
-                        retries += 1
-
-                    load_attempts += 1
-                    if load_attempts >= MAX_ATTEMPTS:
-                        print("⚠️ Max 'Load More' attempts reached.")
-                        break
+                    time.sleep(1.5)
+                    attempt += 1
                 else:
-                    print("⛔ 'Load More' not visible anymore.")
                     break
-            except NoSuchElementException:
-                print("⚠️ 'Load More' button not found or no longer available.")
+            except:
                 break
 
-        driver.quit()
+        except Exception as e:
+            print(f"❌ Error during scraping: {e}")
+            break
 
-        # Save merolagani_news.csv
-        if all_news:
-            new_df = pd.DataFrame(all_news)
-            if os.path.exists(NEWS_FILE):
-                old_df = pd.read_csv(NEWS_FILE)
-                combined_df = pd.concat([old_df, new_df], ignore_index=True).drop_duplicates(subset="title")
-            else:
-                combined_df = new_df
-            combined_df.to_csv(NEWS_FILE, index=False, encoding="utf-8-sig")
-            self.stdout.write(f"✅ {len(new_df)} new news items saved to merolagani_news.csv")
+    driver.quit()
+
+    if news_list:
+        print(f"🆕 Found {len(news_list)} new news items.")
+        df_new = pd.DataFrame(news_list)
+        if os.path.exists(CSV_PATH):
+            df_existing = pd.read_csv(CSV_PATH)
+            df_combined = pd.concat([df_existing, df_new]).drop_duplicates(subset="link")
         else:
-            self.stdout.write("📬 No new news to append.")
+            df_combined = df_new
 
-        # Translate & store stock-related news
-        sentiment_news = []
-        for news in all_news:
-            try:
-                translated = GoogleTranslator(source='auto', target='en').translate(news["title"])
-                for company in company_names:
-                    if company.lower() in translated.lower():
-                        sentiment_news.append({
-                            "original": news["title"],
-                            "translated": translated,
-                            "company": company,
-                            "link": news["link"],
-                            "date": news["date"],
-                            "image": news["image"]
-                        })
-                        break
-            except Exception:
-                continue
+        df_combined.to_csv(CSV_PATH, index=False, encoding="utf-8-sig")
+        print("✅ News CSV updated.")
+    else:
+        print("ℹ️ No new news to update.")
 
-        # Save stock_sentiment_news.csv
-        if sentiment_news:
-            sentiment_df = pd.DataFrame(sentiment_news)
-            if os.path.exists(SENTIMENT_FILE):
-                old_sent = pd.read_csv(SENTIMENT_FILE)
-                combined_sent = pd.concat([old_sent, sentiment_df], ignore_index=True).drop_duplicates(subset="translated")
-            else:
-                combined_sent = sentiment_df
-            combined_sent.to_csv(SENTIMENT_FILE, index=False, encoding="utf-8-sig")
-            self.stdout.write(f"✅ {len(sentiment_df)} stock-related news saved to stock_sentiment_news.csv")
-        else:
-            self.stdout.write("📬 No stock-related news found.")
+def translate_and_match_news():
+    print("🌐 Translating newly scraped headlines and matching companies...")
+
+    if not os.path.exists(CSV_PATH):
+        print("❌ merolagani_news.csv not found.")
+        return
+
+    df = pd.read_csv(CSV_PATH)
+    if "title" not in df.columns:
+        print("❌ 'title' column missing.")
+        return
+
+    # Get companies and prepare for matching
+    companies = list(Stock.objects.values_list("company_name", "symbol"))
+    company_dict = {clean_company_name(name): symbol for name, symbol in companies}
+    print(f"🏢 Loaded {len(companies)} companies.")
+
+    # Load existing sentiment news
+    if os.path.exists(MATCHED_PATH):
+        existing_df = pd.read_csv(MATCHED_PATH)
+        processed_titles = set(existing_df["title"].dropna().tolist())
+        print(f"🔁 Skipping {len(processed_titles)} already processed headlines.")
+    else:
+        existing_df = pd.DataFrame()
+        processed_titles = set()
+
+    new_records = []
+    translator = GoogleTranslator(source='auto', target='en')
+
+    for _, row in df.iterrows():
+        title = row["title"]
+        content = row.get("content", "")
+        
+        if title in processed_titles:
+            continue
+
+        try:
+            # Translate both title and content for better context
+            translated_title = translator.translate(title)
+            translated_content = translator.translate(content) if content else ""
+            
+            # Combine for better matching
+            full_text = f"{translated_title} {translated_content}"
+            full_text_clean = clean_company_name(full_text)
+
+            # Look for company matches
+            for company_clean, symbol in company_dict.items():
+                if company_clean in full_text_clean:
+                    company = next(c for c, s in companies if s == symbol)
+                    new_records.append({
+                        "symbol": symbol,
+                        "company": company,
+                        "title": title,
+                        "translated_title": translated_title,
+                        "content": content,
+                        "translated_content": translated_content,
+                        "link": row["link"],
+                        "date": row["date"]
+                    })
+                    print(f"✅ Match: {company} → {translated_title}")
+                    break
+
+        except Exception as e:
+            print(f"❌ Translation/matching failed: {title} — {e}")
+
+    if new_records:
+        new_df = pd.DataFrame(new_records)
+        updated_df = pd.concat([existing_df, new_df]).drop_duplicates(subset=["title", "symbol"])
+        updated_df.to_csv(MATCHED_PATH, index=False, encoding="utf-8-sig")
+        print(f"💾 Appended {len(new_df)} new matched records to {MATCHED_PATH}")
+    else:
+        print("📭 No new matched news to add.")
+
+def run_sentiment_notebook():
+    print("🧠 Running sentiment notebook...")
+    
+    # Create sentiment_data directory if it doesn't exist
+    os.makedirs("sentiment_data", exist_ok=True)
+    
+    with open(NOTEBOOK_PATH) as f:
+        nb = nbformat.read(f, as_version=4)
+
+    ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
+
+    try:
+        ep.preprocess(nb, {'metadata': {'path': '.'}})
+        print("✅ Sentiment notebook finished.")
+    except Exception as e:
+        print(f"❌ Failed running sentiment notebook: {e}")
+
+if __name__ == "__main__":
+    scrape_latest_news()
+    translate_and_match_news()
+    run_sentiment_notebook()
+

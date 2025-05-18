@@ -33,12 +33,14 @@ ALLOWED_HOSTS = ['stocksanket-prediction-website-fyp-1.onrender.com', 'localhost
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',  # Add daphne before django.contrib.staticfiles
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
 
     # Django built-in humanize app
     'django.contrib.humanize',
@@ -47,7 +49,7 @@ INSTALLED_APPS = [
     'authentication',  # ✅ Ensure authentication is listed
     'stocks',
     'nepse_utils',
-
+    'alerts',  # Add alerts app
 ]
 
 
@@ -81,6 +83,7 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = 'StockSanket.asgi.application'
 
 WSGI_APPLICATION = 'StockSanket.wsgi.application'
 
@@ -91,14 +94,11 @@ WSGI_APPLICATION = 'StockSanket.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'all_stocks',  # Your actual database name
-        'USER': 'root',
-        'PASSWORD': 'janavi',  # Your MySQL password
-        'HOST': '127.0.0.1',  # Use '127.0.0.1' (NOT 'localhost')
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
-        }
+        'NAME': os.environ.get('MYSQL_DATABASE', 'all_stocks'),
+        'USER': os.environ.get('MYSQL_USER', 'root'),
+        'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'janavi'),
+        'HOST': os.environ.get('MYSQL_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('MYSQL_PORT', '3306'),
     }
 }
 
@@ -152,3 +152,14 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',  # For now, use in-memory
+    }
+}
+
+# WebSocket Configuration
+WEBSOCKET_URL = '/ws/'
+WEBSOCKET_ACCEPT_ALL = True  # For development only

@@ -8,17 +8,18 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import re
 import time
+from webdriver_manager.chrome import ChromeDriverManager
 
 class Command(BaseCommand):
     help = "Scrape stocks from Merolagani and fetch full data from NepalStock"
 
     def handle(self, *args, **kwargs):
-        chrome_driver_path = r"C:\\Users\\Bishal\\Downloads\\chromedriver-win64\\chromedriver-win64\\chromedriver.exe"
 
         options = Options()
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
         options.add_argument("user-agent=Mozilla/5.0")
+        service = Service(ChromeDriverManager().install())
 
         service = Service(executable_path=chrome_driver_path)
         main_driver = webdriver.Chrome(service=service, options=options)

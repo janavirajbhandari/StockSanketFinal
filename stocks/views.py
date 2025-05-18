@@ -1,5 +1,5 @@
 import re
-import feedparser  # ✅ Install with: pip install feedparser
+import feedparser  
 import os
 import numpy as np
 import pandas as pd
@@ -15,82 +15,162 @@ import requests
 from datetime import datetime, timedelta
 from django.core.paginator import Paginator
 from bs4 import BeautifulSoup
-
+from django.template.loader import render_to_string
+from django.db.models import Q
+from .models import Stock 
+from django.conf import settings
 
 import requests
 from bs4 import BeautifulSoup
-# company_id = models.IntegerField(null=True, blank=True)
+# company_id = models.IntegerField(null=True, blank=True
 
-from django.shortcuts import redirect, render
+
+def ajax_search_stocks(request):
+    query = request.GET.get('query', '').upper()
+    if query:
+        stocks = Stock.objects.filter(
+            Q(symbol__istartswith=query) |
+            Q(security_name__icontains=query)
+        )[:7]
+
+        results = [
+            {'symbol': stock.symbol, 'name': stock.security_name}
+            for stock in stocks
+        ]
+        return JsonResponse({'results': results})
+    return JsonResponse({'results': []})
+
+
+def stock_history_partial(request):
+    symbol = request.GET.get("symbol")
+    page = request.GET.get("page")
+
+    csv_path = os.path.join(BASE_DIR, "stock_history", f"{symbol.upper()}.csv")
+    try:
+        df = pd.read_csv(csv_path)
+        df["date"] = pd.to_datetime(df["Date"], errors="coerce")
+        df = df.sort_values("date", ascending=False)
+
+        df = df.rename(columns={
+            "Open": "open_price",
+            "High": "high_price",
+            "Low": "low_price",
+            "Close": "close_price",
+            "% change": "adj_close_price",
+            "Volume": "volume"
+        })
+
+        historical_data = df.to_dict(orient="records")
+        paginator = Paginator(historical_data, 10)
+        page_obj = paginator.get_page(page)
+
+        html = render_to_string("partials/history_table.html", {
+            "historical_data": page_obj,
+            "stock": {"symbol": symbol}
+        })
+        return JsonResponse({"html": html})
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
 
 def fetch_live_data_from_nepseapi(symbol):
     try:
-        # ✅ Initialize combined_data at the start
         combined_data = {}
+        timeout_duration = 5  # Increased timeout to 5 seconds
+        api_success = False
 
-        # ✅ Fetch from PriceVolume
-        price_volume_url = "http://localhost:8001/PriceVolume"
-        price_volume_response = requests.get(price_volume_url, timeout=5)
-        price_volume_data = price_volume_response.json() if price_volume_response.status_code == 200 else []
-
-        # ✅ Fetch from LiveMarket
-        live_market_url = "http://localhost:8001/LiveMarket"
-        live_market_response = requests.get(live_market_url, timeout=5)
-        live_market_data = live_market_response.json() if live_market_response.status_code == 200 else []
-
-        # ✅ Fetch from SecurityDetails (for market cap, shares, 52-week high/low)
-        details_url = f"http://localhost:8001/CompanyDetails?symbol={symbol}"
+        # Try to get data from PriceVolume
         try:
-            detail_response = requests.get(details_url, timeout=5)
+            price_volume_url = "http://localhost:8001/PriceVolume"
+            price_volume_response = requests.get(price_volume_url, timeout=timeout_duration)
+            if price_volume_response.status_code == 200:
+                price_volume_data = price_volume_response.json()
+                # Find matching symbol
+                for item in price_volume_data:
+                    if item["symbol"].upper() == symbol.upper():
+                        combined_data.update({
+                            "last_traded_price": item.get("lastTradedPrice"),
+                            "percentage_change": item.get("percentageChange"),
+                            "previous_close": item.get("previousClose"),
+                            "total_trade_quantity": item.get("totalTradeQuantity"),
+                        })
+                        api_success = True
+                        break
+        except requests.exceptions.RequestException as e:
+            print(f"⚠️ Error fetching PriceVolume data: {e}")
+
+        # Try to get data from LiveMarket
+        try:
+            live_market_url = "http://localhost:8001/LiveMarket"
+            live_market_response = requests.get(live_market_url, timeout=timeout_duration)
+            if live_market_response.status_code == 200:
+                live_market_data = live_market_response.json()
+                # Find matching symbol
+                for item in live_market_data:
+                    if item["symbol"].upper() == symbol.upper():
+                        combined_data.update({
+                            "open_price": item.get("openPrice"),
+                            "high_price": item.get("highPrice"),
+                            "low_price": item.get("lowPrice"),
+                            "volume": item.get("totalTradeQuantity"),
+                            "total_trade_value": item.get("totalTradeValue"),
+                            "last_traded_price": item.get("lastTradedPrice"),
+                            "percentage_change": item.get("percentageChange"),
+                            "previous_close": item.get("previousClose"),
+                        })
+                        api_success = True
+                        break
+        except requests.exceptions.RequestException as e:
+            print(f"⚠️ Error fetching LiveMarket data: {e}")
+
+        # Try to get company details
+        try:
+            details_url = f"http://localhost:8001/CompanyDetails?symbol={symbol}"
+            detail_response = requests.get(details_url, timeout=timeout_duration)
             if detail_response.status_code == 200:
                 detail_data = detail_response.json()
                 daily = detail_data.get("securityDailyTradeDto", {})
-                combined_data["businessDate"]=daily.get("businessDate")
-                combined_data["fifty_two_week_high"] = daily.get("fiftyTwoWeekHigh")
-                combined_data["fifty_two_week_low"] = daily.get("fiftyTwoWeekLow")
-                combined_data["market_cap"] = detail_data.get("marketCapitalization")
-                combined_data["public_shares"] = detail_data.get("publicShares")
-                combined_data["promoter_shares"] = detail_data.get("promoterShares")
-        except Exception as e:
+                combined_data.update({
+                    "businessDate": daily.get("businessDate"),
+                    "fifty_two_week_high": daily.get("fiftyTwoWeekHigh"),
+                    "fifty_two_week_low": daily.get("fiftyTwoWeekLow"),
+                    "market_cap": detail_data.get("marketCapitalization"),
+                    "public_shares": detail_data.get("publicShares"),
+                    "promoter_shares": detail_data.get("promoterShares")
+                })
+                api_success = True
+        except requests.exceptions.RequestException as e:
             print(f"⚠️ Error fetching SecurityDetails: {e}")
 
-        # ✅ Merge data from PriceVolume
-        for item in price_volume_data:
-            if item["symbol"].upper() == symbol.upper():
-                combined_data.update({
-                    "last_traded_price": item.get("lastTradedPrice"),
-                    "percentage_change": item.get("percentageChange"),
-                    "previous_close": item.get("previousClose"),
-                    "total_trade_quantity": item.get("totalTradeQuantity"),
-                })
-                break
+        # If no API calls succeeded, try CSV
+        if not api_success:
+            print("⚠️ API calls failed, trying to get data from CSV...")
+            try:
+                csv_path = os.path.join(BASE_DIR, "stock_history", f"{symbol.upper()}.csv")
+                if os.path.exists(csv_path):
+                    df = pd.read_csv(csv_path)
+                    if not df.empty:
+                        latest_row = df.iloc[-1]
+                        combined_data.update({
+                            "last_traded_price": latest_row.get("Close"),
+                            "percentage_change": latest_row.get("% change", 0),
+                            "open_price": latest_row.get("Open"),
+                            "high_price": latest_row.get("High"),
+                            "low_price": latest_row.get("Low"),
+                            "volume": latest_row.get("Volume", 0),
+                            "previous_close": df.iloc[-2].get("Close") if len(df) > 1 else latest_row.get("Close"),
+                        })
+                        print("✅ Successfully loaded data from CSV")
+            except Exception as e:
+                print(f"❌ Error loading from CSV: {e}")
 
-        # ✅ Merge data from LiveMarket
-        for item in live_market_data:
-            if item["symbol"].upper() == symbol.upper():
-                combined_data.update({
-                    "open_price": item.get("openPrice"),
-                    "high_price": item.get("highPrice"),
-                    "low_price": item.get("lowPrice"),
-                    "volume": item.get("totalTradeQuantity"),
-                    "total_trade_value": item.get("totalTradeValue"),
-                    "last_traded_price": item.get("lastTradedPrice"),  # overwrite if needed
-                    "percentage_change": item.get("percentageChange"),  # overwrite if needed
-                    "previous_close": item.get("previousClose"),  # overwrite if needed
-                })
-                break
-
-        if not combined_data:
-            print(f"⚠️ Symbol {symbol} not found in NEPSE API.")
-            return None
-
+        # Always return combined_data, even if some fields are missing
         return combined_data
 
     except Exception as e:
-        print(f"❌ Error fetching from NEPSE API: {str(e)}")
-        return None
-
-
+        print(f"❌ Error in fetch_live_data_from_nepseapi: {str(e)}")
+        return {}
 
 def calculate_nepse_start_date(timeframe):
     today = datetime.today()
@@ -134,11 +214,19 @@ def mero_news_view(request):
     df = df.dropna(subset=["title", "link"])  # Ensure clean rows
 
     # Convert "date" to datetime safely
-    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    # Parse multiple date formats
+    from dateutil import parser
 
-    # Sort, drop invalid dates
+    def parse_date_safe(date_str):
+        try:
+            return parser.parse(date_str)
+        except:
+            return pd.NaT
+
+    df["date"] = df["date"].apply(parse_date_safe)
     df = df.dropna(subset=["date"])
     df = df.sort_values(by="date", ascending=False)
+
 
     # Convert datetime to string before sending to template
     df["date"] = df["date"].dt.strftime("%Y-%m-%d %H:%M")
@@ -153,7 +241,7 @@ def mero_news_view(request):
 
 
     # Pagination (8 per page)
-    paginator = Paginator(articles, 8)
+    paginator = Paginator(articles, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -369,37 +457,77 @@ def blog_articles_view(request):
 
 
 
+from django.db.models import Q
+from django.core.paginator import Paginator
+from .models import Stock
+
 def StocksView(request):
-    stocks = Stock.objects.all()
-    paginator = Paginator(stocks, 100)
+    query = request.GET.get("q", "").strip()
     page = request.GET.get("page")
-    page_obj = paginator.get_page(page)
-    return render(request, "stocks.html", {"stocks": page_obj})
+
+    stocks_queryset = Stock.objects.all()
+    if query:
+        stocks_queryset = stocks_queryset.filter(
+            Q(symbol__icontains=query) |
+            Q(company_name__icontains=query)
+        )
+
+    paginator = Paginator(stocks_queryset, 40)
+    stocks_page = paginator.get_page(page)
+
+    # Get unique sector and regulatory names
+    sectors = Stock.objects.values_list('sector_name', flat=True).distinct()
+    regulators = Stock.objects.values_list('regulatory_body', flat=True).distinct()
+
+    return render(request, "stocks.html", {
+        "stocks": stocks_page,
+        "query": query,
+        "total_results": stocks_queryset.count(),
+        "sectors": sectors,
+        "regulators": regulators
+    })
 
 
 def get_stock_data(request, symbol): 
     try:
+        # Validate symbol
+        if not symbol or symbol.isspace():
+            return JsonResponse({"error": "Symbol is required"}, status=400)
+            
         symbol = symbol.upper()
         timeframe = request.GET.get("timeframe", "1Y")
         start_date = calculate_nepse_start_date(timeframe)
 
-        csv_path = os.path.join(BASE_DIR, "stock_history", f"{symbol}.csv")
+        # Get live market data using existing function
+        live_data = fetch_live_data_from_nepseapi(symbol)
+        if not live_data:
+            print(f"❌ No live data found for {symbol}")
+            live_data = {}
+
+        # Get turnover data
+        turnover_url = "http://localhost:8001/TradeTurnoverTransactionSubindices"
+        try:
+            turnover_response = requests.get(turnover_url, timeout=5)
+            turnover_data = turnover_response.json()
+            # The API returns data in scripsDetails object
+            stock_turnover_data = turnover_data.get('scripsDetails', {}).get(symbol)
+            if not stock_turnover_data:
+                print(f"No turnover data found for {symbol}")
+        except Exception as e:
+            print(f"Error fetching turnover data: {e}")
+            stock_turnover_data = None
+
+        # Ensure the stock_history directory exists
+        stock_history_dir = os.path.join(BASE_DIR, "stock_history")
+        if not os.path.exists(stock_history_dir):
+            os.makedirs(stock_history_dir)
+
+        csv_path = os.path.join(stock_history_dir, f"{symbol}.csv")
         
         if os.path.exists(csv_path):
             df = pd.read_csv(csv_path)
         else:
-            # ✅ Fetch from API if CSV doesn't exist
-            api_url = f"http://localhost:8001/PriceVolumeHistory?symbol={symbol}"
-            response = requests.get(api_url, timeout=5)
-            if response.status_code != 200:
-                return JsonResponse({"error": f"No CSV found and API failed for {symbol}"}, status=404)
-
-            data = response.json()
-            if not data:
-                return JsonResponse({"error": f"No historical data found from API for {symbol}"}, status=404)
-
-            df = pd.DataFrame(data)
-
+            return JsonResponse({"error": f"No historical data found for {symbol}"}, status=404)
         # Clean & transform
         df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
         df = df.dropna(subset=["Date", "Close"])
@@ -412,9 +540,23 @@ def get_stock_data(request, symbol):
         dates = df["Date"].dt.strftime("%Y-%m-%d").tolist()
         prices = df["Close"].tolist()
 
-        # Load stock company name (optional fallback)
+        # Load stock company name
         company = Stock.objects.filter(symbol=symbol).first()
         company_name = company.company_name if company else "N/A"
+
+        # Format market cap from live_data
+        market_cap = "N/A"
+        if live_data.get('market_cap'):
+            market_cap = f"{int(live_data['market_cap']):,}"
+
+        # Get volume and turnover from turnover data
+        volume = "N/A"
+        turnover = "N/A"
+        if stock_turnover_data:
+            if 'volume' in stock_turnover_data:
+                volume = f"{int(stock_turnover_data['volume']):,}"
+            if 'Turnover' in stock_turnover_data:  # Note the capital T in Turnover
+                turnover = f"{float(stock_turnover_data['Turnover']):,.2f}"
 
 
         return JsonResponse({
@@ -422,11 +564,11 @@ def get_stock_data(request, symbol):
             "dates": dates,
             "prices": prices,
             "company": company_name,
-            "market_cap": "N/A",
+            "market_cap": market_cap,
             "price": prices[-1] if prices else "N/A",
             "change": round(prices[-1] - prices[-2], 2) if len(prices) >= 2 else "N/A",
-            "volume": "N/A",
-            "pe_ratio": "N/A",
+            "volume": volume,
+            "turnover": turnover
         })
 
     except Exception as e:
@@ -530,44 +672,47 @@ from django.utils.safestring import mark_safe
 
 def StockDetail(request):
     symbol = request.GET.get('symbol')  # <-- Get symbol from query parameters
-    stock = get_object_or_404(Stock, symbol=symbol)
+
     try:
         stock_data = Stock.objects.filter(symbol=symbol.upper()).first()
-        if not stock_data or not stock_data.company_id:
-            return render(request, "stockDetail.html", {"error": "Stock or company ID not found"})
+        if not stock_data:
+            return render(request, "stockDetail.html", {"error": "Stock not found"})
 
+        # Get live data - will always return a dict, even if empty
         live_data = fetch_live_data_from_nepseapi(stock_data.symbol)
-        if not live_data:
-            return render(request, "stockDetail.html", {"error": "Failed to fetch live NEPSE data."})
 
-        last_price = live_data.get("last_traded_price", "N/A")
-        previous_close = live_data.get("previous_close", "N/A")
+        # Calculate price changes if we have the necessary data
+        last_price = live_data.get("last_traded_price")
+        previous_close = live_data.get("previous_close")
+        price_change = "-"
+        percentage_change = "-"
 
-        try:
-            price_change = round(float(last_price) - float(previous_close), 2)
-            percentage_change = round((price_change / float(previous_close)) * 100, 2) if float(previous_close) != 0 else 0
-        except:
-            price_change = "-"
-            percentage_change = "-"
+        if last_price is not None and previous_close is not None:
+            try:
+                last_price = float(last_price)
+                previous_close = float(previous_close)
+                price_change = round(last_price - previous_close, 2)
+                percentage_change = round((price_change / previous_close) * 100, 2) if previous_close != 0 else 0
+            except (ValueError, TypeError):
+                pass
 
-
-
+   
         stock_info = {
 
             "symbol": stock_data.symbol,
             "company": stock_data.company_name,
-            "price": last_price,
+            "price": last_price if last_price is not None else "N/A",
             "price_change": price_change,
             "percentage_change": percentage_change,
             "volume": live_data.get("volume", "N/A"),
-            "previous_close": previous_close,
+            "previous_close": previous_close if previous_close is not None else "N/A",
             "high_low": f"{live_data.get('high_price', 'N/A')} / {live_data.get('low_price', 'N/A')}",
             "week_52": f"{live_data.get('fifty_two_week_high', 'N/A')} / {live_data.get('fifty_two_week_low', 'N/A')}",
-            "market_cap": f"{int(live_data.get('market_cap', 0)):,}" if live_data.get("market_cap") else "N/A",
-            "public_shares": f"{int(live_data.get('public_shares', 0)):,}" if live_data.get("public_shares") else "N/A",
-            "promoter_shares": f"{int(live_data.get('promoter_shares', 0)):,}" if live_data.get("promoter_shares") else "N/A",                                                                                                          
+            "market_cap": f"{int(live_data['market_cap']):,}" if live_data.get("market_cap") else "N/A",
+            "public_shares": f"{int(live_data['public_shares']):,}" if live_data.get("public_shares") else "N/A",
+            "promoter_shares": f"{int(live_data['promoter_shares']):,}" if live_data.get("promoter_shares") else "N/A",
             "open_price": live_data.get("open_price", "N/A"),
-            "close_price": last_price,
+            "close_price": last_price if last_price is not None else "N/A"),
             "trades": live_data.get("total_trade_quantity", "N/A"),
             "todays_amount": live_data.get("total_trade_value", "N/A"),
             "date": live_data.get("businessDate", "N/A"),
@@ -578,7 +723,6 @@ def StockDetail(request):
 
         # Load and clean chart data for overview
         historical_chart_data = []
-        df = pd.DataFrame()
         csv_path = os.path.join(BASE_DIR, "stock_history", f"{symbol.upper()}.csv")
         try:
             df = pd.read_csv(csv_path)
@@ -601,8 +745,6 @@ def StockDetail(request):
         except Exception as e:
             print("⚠️ Error loading CSV for chart data:", e)
 
-        print("✅ Chart data count:", len(historical_chart_data))
-
         # Historical table for history tab
         historical_data = []
        
@@ -611,7 +753,10 @@ def StockDetail(request):
         try:
             df2 = pd.read_csv(csv_path)
             df2["date"] = pd.to_datetime(df2["Date"], errors="coerce")
-            df2 = df2.sort_values("date", ascending=False)  # 🔁 Newest first
+
+            df2 = df2.sort_values("date", ascending=False)
+
+
             df2 = df2.rename(columns={
                 "Open": "open_price",
                 "High": "high_price",
@@ -622,17 +767,15 @@ def StockDetail(request):
             })
             historical_data = df2.to_dict(orient="records")
 
-            # ✅ Apply pagination here
-            paginator = Paginator(historical_data, 10)  # 10 records per page
+            paginator = Paginator(historical_data, 10)
             page_number = request.GET.get("history_page")
             page_obj = paginator.get_page(page_number)
-
         except Exception as e:
             print("⚠️ CSV read error:", e)
             page_obj = []
 
 
-        # Load sentiment
+        # Load sentiment data with proper error handling
         sentiment = {}
         sentiment_path = os.path.join(BASE_DIR, "sentiment_data", "sentiment_all_stocks.json")
         try:
@@ -642,69 +785,84 @@ def StockDetail(request):
         except Exception as e:
             print("⚠️ Sentiment file error:", e)
 
-        # Top & extra news
-        top_news, extra_articles = [], []
-        if sentiment.get("top_positive_news", {}).get("title"):
-            top_news.append({
-                "title": sentiment["top_positive_news"]["title"],
-                "link": sentiment["top_positive_news"]["link"],
-                "timestamp": sentiment["top_positive_news"].get("date_str", ""),
-                "tag": "positive"
-            })
-        if sentiment.get("top_negative_news", {}).get("title"):
-            top_news.append({
-                "title": sentiment["top_negative_news"]["title"],
-                "link": sentiment["top_negative_news"]["link"],
-                "timestamp": sentiment["top_negative_news"].get("date_str", ""),
-                "tag": "negative"
-            })
-
-        shown_links = {a["link"] for a in top_news}
-        for a in sentiment.get("articles", []):
-            if a.get("link") not in shown_links and len(extra_articles) < 5:
-                extra_articles.append({
-                    "title": a.get("title", ""),
-                    "link": a.get("link", "#"),
-                    "timestamp": a.get("date", ""),
-                    "tag": a.get("sentiment", "")
+        # Process news with proper error handling
+        top_news = []
+        extra_articles = []
+        try:
+            if sentiment.get("top_positive_news", {}).get("title"):
+                top_news.append({
+                    "title": sentiment["top_positive_news"]["title"],
+                    "link": sentiment["top_positive_news"]["link"],
+                    "timestamp": sentiment["top_positive_news"].get("date_str", ""),
+                    "tag": "positive"
+                })
+            if sentiment.get("top_negative_news", {}).get("title"):
+                top_news.append({
+                    "title": sentiment["top_negative_news"]["title"],
+                    "link": sentiment["top_negative_news"]["link"],
+                    "timestamp": sentiment["top_negative_news"].get("date_str", ""),
+                    "tag": "negative"
                 })
 
-        # 🛠 Add CSV Indexes to top_news & extra_articles
-        for article in top_news + extra_articles:
-            article["csv_index"] = get_csv_index_from_link(article["link"])
+            shown_links = {a["link"] for a in top_news}
+            for a in sentiment.get("articles", []):
+                if a.get("link") not in shown_links and len(extra_articles) < 5:
+                    extra_articles.append({
+                        "title": a.get("title", ""),
+                        "link": a.get("link", "#"),
+                        "timestamp": a.get("date", ""),
+                        "tag": a.get("sentiment", "")
+                    })
 
-        # Sentiment Scores
-        positive_percent = float(sentiment.get("positive_percent", 0))
-        neutral_percent = float(sentiment.get("neutral_percent", 0))
-        negative_percent = float(sentiment.get("negative_percent", 0))
-        sentiment_scores = [
-            ("positive", positive_percent),
-            ("neutral", neutral_percent),
-            ("negative", negative_percent),
-        ]
-        top_sentiment_label, top_sentiment_value = max(sentiment_scores, key=lambda x: x[1])
+            # Add CSV Indexes
+            for article in top_news + extra_articles:
+                article["csv_index"] = get_csv_index_from_link(article["link"])
+        except Exception as e:
+            print("⚠️ Error processing news:", e)
+
+        # Calculate sentiment scores with proper error handling
+        try:
+            positive_percent = float(sentiment.get("positive_percent", 0))
+            neutral_percent = float(sentiment.get("neutral_percent", 0))
+            negative_percent = float(sentiment.get("negative_percent", 0))
+            sentiment_scores = [
+                ("positive", positive_percent),
+                ("neutral", neutral_percent),
+                ("negative", negative_percent),
+            ]
+            top_sentiment_label, top_sentiment_value = max(sentiment_scores, key=lambda x: x[1])
+        except Exception as e:
+            print("⚠️ Error calculating sentiment scores:", e)
+            positive_percent = neutral_percent = negative_percent = 0
+            top_sentiment_label, top_sentiment_value = "neutral", 0
+
+        # Check watchlist status
         is_in_watchlist = False
         if request.user.is_authenticated:
             is_in_watchlist = Watchlist.objects.filter(symbol=symbol.upper()).exists()
 
-
-           
-        # 🔶 1. Load prediction JSON and create prediction_chart_data
-        prediction_chart_data = get_prediction_chart_data(symbol)
-
-        predicted_data = [
-            {
-                "date": datetime.fromtimestamp(item["time"]).strftime("%B %d, %Y"),
-                "close": round(item["close"], 2)
-            }
-            for item in prediction_chart_data if item.get("predicted")
-        ]
-
+        # Load prediction data with proper error handling
+        prediction_chart_data = []
+        predicted_data = []
+        try:
+            prediction_chart_data = get_prediction_chart_data(symbol)
+            if prediction_chart_data:
+                predicted_data = [
+                    {
+                        "date": datetime.fromtimestamp(item["time"]).strftime("%B %d, %Y"),
+                        "close": round(item["close"], 2)
+                    }
+                    for item in prediction_chart_data if item.get("predicted")
+                ]
+        except Exception as e:
+            print(f"❌ Error loading prediction data: {e}")
 
         context = {
             "stock": stock_info,
             "historical_data": page_obj,
-            "historical_chart_data": json.dumps(historical_chart_data),  # overview chart
+          
+            "historical_chart_data": json.dumps(historical_chart_data) if historical_chart_data else "[]",
+
             "positive_percent": positive_percent,
             "neutral_percent": neutral_percent,
             "negative_percent": negative_percent,
@@ -724,15 +882,145 @@ def StockDetail(request):
             "top_sentiment_label": top_sentiment_label,
             "top_sentiment_value": top_sentiment_value,
             "is_in_watchlist": is_in_watchlist,
-            "prediction_chart_data": json.dumps(prediction_chart_data),
+            "prediction_chart_data": json.dumps(prediction_chart_data) if prediction_chart_data else "[]",
             "predicted_data": predicted_data,
-
         }
-
-
 
         return render(request, "stockDetail.html", context)
 
     except Exception as e:
         print("❌ Error in StockDetail view:", e)
-        return render(request, "stockDetail.html", {"error": "Something went wrong while fetching stock details."})
+        return render(request, "stockDetail.html", {
+            "error": "Something went wrong while fetching stock details.",
+            "details": str(e)
+        })
+
+
+def get_market_data(request, symbol):
+    try:
+        # Fetch market data using existing function
+        market_data = fetch_live_data_from_nepseapi(symbol)
+        
+        if not market_data:
+            response = JsonResponse({'error': f'No data found for symbol {symbol}'}, status=404)
+            response["Access-Control-Allow-Origin"] = "*"
+            response["Content-Type"] = "application/json"
+            return response
+        
+        # Get company name from Stock model
+        stock = Stock.objects.filter(symbol=symbol.upper()).first()
+        company_name = stock.security_name if stock else "N/A"
+        
+        # Format market cap
+        market_cap = "N/A"
+        if market_data.get('market_cap'):
+            market_cap = f"{int(market_data['market_cap']):,}"
+            
+        # Format the response data
+        response_data = {
+            'company': company_name,
+            'market_cap': market_cap,
+            'price': market_data.get('last_traded_price', 'N/A'),
+            'change': market_data.get('percentage_change', 'N/A'),
+            'volume': f"{int(market_data.get('volume', 0)):,}" if market_data.get('volume') else 'N/A',
+            'turnover': f"{float(market_data.get('total_trade_value', 0)):,.2f}" if market_data.get('total_trade_value') else 'N/A'
+        }
+        
+        response = JsonResponse(response_data)
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Content-Type"] = "application/json"
+        return response
+    except Exception as e:
+        print(f"Error in get_market_data: {str(e)}")
+        response = JsonResponse({'error': str(e)}, status=500)
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Content-Type"] = "application/json"
+        return response
+
+def get_prediction_data(request, symbol):
+    """Fetch prediction data from the JSON file for a given stock symbol."""
+    try:
+        print(f"🔍 Fetching prediction data for symbol: {symbol}")
+        
+        predictions_dir = os.path.join(BASE_DIR, "predictions")
+        print(f"📂 Predictions directory: {predictions_dir}")
+        
+        if not os.path.exists(predictions_dir):
+            print(f"❌ Predictions directory not found at: {predictions_dir}")
+            return JsonResponse({
+                "success": False,
+                "error": "Predictions data not available",
+                "predicted_7_days": [],
+                "message": "Prediction data is not available for this stock yet."
+            })
+            
+        prediction_file = os.path.join(predictions_dir, symbol.upper(), f"{symbol.upper()}.json")
+        print(f"📁 Looking for file at: {prediction_file}")
+            
+        if not os.path.exists(prediction_file):
+            print(f"❌ File not found: {prediction_file}")
+            return JsonResponse({
+                "success": False,
+                "error": f"No prediction data found for {symbol}",
+                "predicted_7_days": [],
+                "message": "Prediction data is not available for this stock yet."
+            })
+            
+        print(f"📖 Reading JSON file for {symbol}")
+        with open(prediction_file, 'r') as f:
+            prediction_data = json.load(f)
+            print(f"✅ JSON data loaded. Keys found: {list(prediction_data.keys())}")
+        
+        predicted_days = prediction_data.get("predicted_7_days", [])
+        if not predicted_days and "past_30_days" in prediction_data:
+            past_days = prediction_data["past_30_days"]
+            predicted_days = past_days[-7:] if len(past_days) >= 7 else past_days
+        
+        print(f"📊 Found {len(predicted_days)} predicted days")
+        
+        valid_predictions = []
+        
+        for pred in predicted_days:
+            if all(key in pred for key in ["date", "open", "high", "low", "close"]):
+                try:
+                    prediction = {
+                        "date": pred["date"],
+                        "open": float(pred["open"]),
+                        "high": float(pred["high"]),
+                        "low": float(pred["low"]),
+                        "close": float(pred["close"])
+                    }
+                    valid_predictions.append(prediction)
+                except (ValueError, TypeError) as e:
+                    print(f"⚠️ Error processing prediction values: {e}")
+                    continue
+        
+        print(f"✅ Final valid predictions count: {len(valid_predictions)}")
+        if not valid_predictions:
+            return JsonResponse({
+                "success": False,
+                "error": "No valid predictions available",
+                "predicted_7_days": [],
+                "message": "No valid prediction data available for this stock."
+            })
+        
+        valid_predictions.sort(key=lambda x: x["date"])
+        
+        response_data = {
+            "success": True,
+            "predicted_7_days": valid_predictions[-7:] if len(valid_predictions) > 7 else valid_predictions,
+            "message": "Prediction data loaded successfully."
+        }
+        
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        print(f"❌ Error in get_prediction_data for {symbol}: {str(e)}")
+        import traceback
+        print(f"Stack trace: {traceback.format_exc()}")
+        return JsonResponse({
+            "success": False,
+            "error": str(e),
+            "predicted_7_days": [],
+            "message": "An error occurred while fetching prediction data."
+        })

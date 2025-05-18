@@ -1,53 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stocks</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100">
 
-    {% extends 'base.html' %}
-    {% block content %}
-    <div class="flex">
-        {% include 'sidebar.html' %}
-    
-        <main class="flex-1 p-6 lg:ml-[180px] mt-16">
-    
-            <!-- Title Section -->
-            <div>
-                <h1 class="text-[#001F7B] text-3xl font-bold">All Stock Symbols</h1>
-                <hr class="mt-2 border-t-2 border-gray-300">
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex">
+    {% include 'sidebar.html' %}
+
+    <main class="flex-1 p-6 lg:ml-[180px] mt-16">
+        <div>
+            <h1 class="text-[#001F7B] text-3xl font-bold">All Stock Symbols</h1>
+            <hr class="mt-2 border-t-2 border-gray-300">
+        </div>
+
+        <div class="flex justify-between items-center mt-6 mb-4">
+            <h2 class="text-lg font-semibold" id="total-stock-count">{{ stocks.paginator.count }} Stocks</h2>
+
+            <div class="relative">
+                <input type="text" id="stock-search-filter" placeholder="Find by symbol or company..."
+                       class="w-64 pl-4 pr-10 py-2 border rounded-lg focus:ring focus:ring-blue-200 outline-none">
+                <span class="absolute right-3 top-2 text-gray-500 material-icons">search</span>
             </div>
-    
-            <!-- Search Bar & Stock Count -->
-            <div class="flex justify-between items-center mt-6 mb-4">
-                <h2 class="text-lg font-semibold">{{ stocks.paginator.count }} Stocks</h2>
-                <div class="relative">
-                    <input type="text" placeholder="Find...." 
-                        class="w-64 pl-4 pr-10 py-2 border rounded-lg focus:ring focus:ring-blue-200 outline-none">
-                    <span class="absolute right-3 top-2 text-gray-500 material-icons">search</span>
-                </div>
-            </div>
-    
-            <!-- Stocks Table -->
-            <div class="bg-white shadow-lg rounded-lg overflow-hidden mt-6">
-                <table class="w-full table-auto border-collapse">
-                    <thead class="bg-gray-200">
-                        <tr class="text-left">
-                            <th class="px-4 py-3">Symbol</th>
-                            <th class="px-4 py-3">Company Name</th>
-                            <th class="px-4 py-3">Website</th>
-                            <th class="px-4 py-3">Sector Name</th>
-                            <th class="px-4 py-3">Regulatory Body</th>
-                            <th class="px-4 py-3">Company Email</th>
-                            <th class="px-4 py-3">Instrument Type</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for stock in stocks %}
-                        <tr class="border-b hover:bg-gray-100">
+        </div>
+
+        <!-- Filters -->
+        <div class="flex gap-3 mt-4 items-center">
+            <select id="sector-filter" class="border px-3 py-2 rounded-lg">
+                <option value="" >All Sectors</option>
+                {% for sector in sectors %}
+                    <option value="{{ sector }}">{{ sector }}</option>
+                {% endfor %}
+            </select>
+
+            <select id="regulator-filter" class="border px-3 py-2 rounded-lg">
+                <option value="">All Regulatory Bodies</option>
+                {% for regulator in regulators %}
+                    <option value="{{ regulator }}">{{ regulator }}</option>
+                {% endfor %}
+            </select>
+
+            <button id="clear-filters" class="bg-blue-700 text-white px-3 py-2 rounded-lg hover:bg-blue-300">
+                Clear Filters
+            </button>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mt-6">
+            <table class="w-full table-auto border-collapse">
+                <thead class="bg-gray-200">
+                    <tr class="text-left">
+                        <th class="px-4 py-3">Symbol</th>
+                        <th class="px-4 py-3">Company Name</th>
+                        <th class="px-4 py-3">Website</th>
+                        <th class="px-4 py-3">Sector Name</th>
+                        <th class="px-4 py-3">Regulatory Body</th>
+                        <th class="px-4 py-3">Company Email</th>
+                        <th class="px-4 py-3">Instrument Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stock in stocks %}
+                        <tr class="border-b hover:bg-gray-100 stock-row"
+                            data-symbol="{{ stock.symbol|lower }}"
+                            data-company="{{ stock.company_name|lower }}"
+                            data-sector="{{ stock.sector_name|lower }}"
+                            data-regulator="{{ stock.regulatory_body|lower }}">
                             <td class="px-4 py-3 text-blue-600 font-medium">
                                 <a href="{% url 'stockDetail' %}?symbol={{ stock.symbol|urlencode }}">{{ stock.symbol }}</a>
 
@@ -56,55 +71,98 @@
                             <td class="px-4 py-3">
                                 {% if stock.website %}
                                     <a href="http://{{ stock.website }}" target="_blank" class="text-blue-500">{{ stock.website }}</a>
-                                {% else %}
-                                    -
-                                {% endif %}
+
+                                {% else %}-{% endif %}
+
                             </td>
                             <td class="px-4 py-3">{{ stock.sector_name }}</td>
                             <td class="px-4 py-3">{{ stock.regulatory_body }}</td>
                             <td class="px-4 py-3">{{ stock.company_email }}</td>
                             <td class="px-4 py-3">{{ stock.instrument_type }}</td>
                         </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="7" class="text-center py-4 text-gray-500">No data available</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                    {% endfor %}
+                    <tr id="no-result-row" style="display: none;">
+                        <td colspan="7" class="text-center py-4 text-gray-500">No stocks found</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-    
-            <!-- Pagination Controls -->
-            <div class="flex justify-between items-center mt-6 px-4">
-                <a href="?page=1" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">First</a>
-    
-                {% if stocks.has_previous %}
-                    <a href="?page={{ stocks.previous_page_number }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Previous</a>
-                {% else %}
-                    <span class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">Previous</span>
-                {% endif %}
-    
-                <span class="text-gray-700">Page {{ stocks.number }} of {{ stocks.paginator.num_pages }}</span>
-    
-                {% if stocks.has_next %}
-                    <a href="?page={{ stocks.next_page_number }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Next</a>
-                {% else %}
-                    <span class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">Next</span>
-                {% endif %}
-    
-                <a href="?page={{ stocks.paginator.num_pages }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Last</a>
-            </div>
-    
-        </main>
-    </div>
-    {% endblock %}
-    <script>
-        function redirectToStock(symbol) {
-            // 👇 This triggers the new page load immediately
-            window.location.href = `/stockDetail/${symbol}/`;
-        }
-    </script>
-    
-</body>
-</html>
+        <!-- Pagination -->
+        <div class="flex justify-between items-center mt-6 px-4 pagination-wrapper" id="pagination-wrapper">
+            <a href="?page=1" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">First</a>
+
+            {% if stocks.has_previous %}
+                <a href="?page={{ stocks.previous_page_number }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Previous</a>
+            {% else %}
+                <span class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">Previous</span>
+            {% endif %}
+
+            <span class="text-gray-700">Page {{ stocks.number }} of {{ stocks.paginator.num_pages }}</span>
+
+            {% if stocks.has_next %}
+                <a href="?page={{ stocks.next_page_number }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Next</a>
+            {% else %}
+                <span class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">Next</span>
+            {% endif %}
+
+            <a href="?page={{ stocks.paginator.num_pages }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Last</a>
+        </div>
+    </main>
+</div>
+
+<!-- Filtering Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('stock-search-filter');
+    const rows = document.querySelectorAll('.stock-row');
+    const totalCount = document.getElementById('total-stock-count');
+    const noResultRow = document.getElementById('no-result-row');
+    const paginationWrapper = document.querySelector('.pagination-wrapper');
+
+    const sectorFilter = document.getElementById('sector-filter');
+    const regulatorFilter = document.getElementById('regulator-filter');
+    const clearBtn = document.getElementById('clear-filters');
+
+    function applyFilters() {
+        const query = searchInput.value.trim().toLowerCase();
+        const selectedSector = sectorFilter.value.toLowerCase();
+        const selectedRegulator = regulatorFilter.value.toLowerCase();
+
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const symbol = row.dataset.symbol;
+            const company = row.dataset.company;
+            const sector = row.dataset.sector;
+            const regulator = row.dataset.regulator;
+
+            const matchesSearch = symbol.includes(query) || company.includes(query);
+            const matchesSector = !selectedSector || sector === selectedSector;
+            const matchesRegulator = !selectedRegulator || regulator === selectedRegulator;
+
+            const shouldShow = matchesSearch && matchesSector && matchesRegulator;
+            row.style.display = shouldShow ? '' : 'none';
+
+            if (shouldShow) visibleCount++;
+        });
+
+        totalCount.textContent = `${visibleCount} Stocks`;
+        noResultRow.style.display = visibleCount === 0 ? '' : 'none';
+        paginationWrapper.style.display = (query || selectedSector || selectedRegulator) ? 'none' : '';
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    sectorFilter.addEventListener('change', applyFilters);
+    regulatorFilter.addEventListener('change', applyFilters);
+
+    clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        sectorFilter.value = '';
+        regulatorFilter.value = '';
+        applyFilters();
+    });
+});
+</script>
+{% endblock %}
+

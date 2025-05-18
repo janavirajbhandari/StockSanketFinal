@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 
 {% block content %}
@@ -64,12 +65,15 @@
                             data-regulator="{{ stock.regulatory_body|lower }}">
                             <td class="px-4 py-3 text-blue-600 font-medium">
                                 <a href="{% url 'stockDetail' %}?symbol={{ stock.symbol|urlencode }}">{{ stock.symbol }}</a>
+
                             </td>
                             <td class="px-4 py-3">{{ stock.company_name }}</td>
                             <td class="px-4 py-3">
                                 {% if stock.website %}
                                     <a href="http://{{ stock.website }}" target="_blank" class="text-blue-500">{{ stock.website }}</a>
+
                                 {% else %}-{% endif %}
+
                             </td>
                             <td class="px-4 py-3">{{ stock.sector_name }}</td>
                             <td class="px-4 py-3">{{ stock.regulatory_body }}</td>
@@ -161,3 +165,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 {% endblock %}
+

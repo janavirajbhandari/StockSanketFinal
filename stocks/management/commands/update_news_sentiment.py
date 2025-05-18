@@ -1,8 +1,9 @@
+from django.core.management.base import BaseCommand
+from stocks.models import Stock
+
 import os
 import time
 import pandas as pd
-import nbformat
-from nbconvert.preprocessors import ExecutePreprocessor
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -227,3 +228,4 @@ if __name__ == "__main__":
     scrape_latest_news()
     translate_and_match_news()
     run_sentiment_notebook()
+

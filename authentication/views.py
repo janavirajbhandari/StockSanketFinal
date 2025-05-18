@@ -13,6 +13,7 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
 
+
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -38,9 +39,9 @@ def search_stocks(request):
     return JsonResponse({'results': []})
 
 
+
 def HomePages(request):
-      
-      # ✅ Add this inside HomePages view before return statement
+    
         news_df = pd.read_csv(r"C:\Users\Bishal\Desktop\Final Project\StockSanket\merolagani_news.csv")
         news_df = news_df.dropna(subset=["title", "link"])  # Ensure clean rows
 
@@ -139,6 +140,7 @@ def HomePages(request):
 
 def news_detail(request, news_id):
     df = pd.read_csv("StockSanket/merolagani_news.csv")
+
     df = df.dropna(subset=["link", "title", "date"]).reset_index(drop=True)
 
     try:

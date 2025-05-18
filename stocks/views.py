@@ -20,6 +20,9 @@ from django.db.models import Q
 from .models import Stock 
 from django.conf import settings
 
+import requests
+from bs4 import BeautifulSoup
+# company_id = models.IntegerField(null=True, blank=True
 
 
 def ajax_search_stocks(request):
@@ -168,8 +171,6 @@ def fetch_live_data_from_nepseapi(symbol):
     except Exception as e:
         print(f"❌ Error in fetch_live_data_from_nepseapi: {str(e)}")
         return {}
-
-
 
 def calculate_nepse_start_date(timeframe):
     today = datetime.today()
@@ -487,7 +488,7 @@ def StocksView(request):
     })
 
 
-def get_stock_data(request, symbol):
+def get_stock_data(request, symbol): 
     try:
         # Validate symbol
         if not symbol or symbol.isspace():
@@ -527,7 +528,6 @@ def get_stock_data(request, symbol):
             df = pd.read_csv(csv_path)
         else:
             return JsonResponse({"error": f"No historical data found for {symbol}"}, status=404)
-
         # Clean & transform
         df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
         df = df.dropna(subset=["Date", "Close"])
@@ -557,6 +557,7 @@ def get_stock_data(request, symbol):
                 volume = f"{int(stock_turnover_data['volume']):,}"
             if 'Turnover' in stock_turnover_data:  # Note the capital T in Turnover
                 turnover = f"{float(stock_turnover_data['Turnover']):,.2f}"
+
 
         return JsonResponse({
             "symbol": symbol,
@@ -671,6 +672,7 @@ from django.utils.safestring import mark_safe
 
 def StockDetail(request):
     symbol = request.GET.get('symbol')  # <-- Get symbol from query parameters
+
     try:
         stock_data = Stock.objects.filter(symbol=symbol.upper()).first()
         if not stock_data:
@@ -694,8 +696,9 @@ def StockDetail(request):
             except (ValueError, TypeError):
                 pass
 
-        # Build stock info with fallbacks for missing data
+   
         stock_info = {
+
             "symbol": stock_data.symbol,
             "company": stock_data.company_name,
             "price": last_price if last_price is not None else "N/A",
@@ -709,12 +712,14 @@ def StockDetail(request):
             "public_shares": f"{int(live_data['public_shares']):,}" if live_data.get("public_shares") else "N/A",
             "promoter_shares": f"{int(live_data['promoter_shares']):,}" if live_data.get("promoter_shares") else "N/A",
             "open_price": live_data.get("open_price", "N/A"),
-            "close_price": last_price if last_price is not None else "N/A",
+            "close_price": last_price if last_price is not None else "N/A"),
             "trades": live_data.get("total_trade_quantity", "N/A"),
             "todays_amount": live_data.get("total_trade_value", "N/A"),
             "date": live_data.get("businessDate", "N/A"),
             "currency": "NPR",
         }
+
+        
 
         # Load and clean chart data for overview
         historical_chart_data = []
@@ -742,10 +747,16 @@ def StockDetail(request):
 
         # Historical table for history tab
         historical_data = []
+       
+
+        # Historical table for history tab
         try:
             df2 = pd.read_csv(csv_path)
             df2["date"] = pd.to_datetime(df2["Date"], errors="coerce")
+
             df2 = df2.sort_values("date", ascending=False)
+
+
             df2 = df2.rename(columns={
                 "Open": "open_price",
                 "High": "high_price",
@@ -755,12 +766,14 @@ def StockDetail(request):
                 "Volume": "volume"
             })
             historical_data = df2.to_dict(orient="records")
+
             paginator = Paginator(historical_data, 10)
             page_number = request.GET.get("history_page")
             page_obj = paginator.get_page(page_number)
         except Exception as e:
             print("⚠️ CSV read error:", e)
             page_obj = []
+
 
         # Load sentiment data with proper error handling
         sentiment = {}
@@ -847,7 +860,9 @@ def StockDetail(request):
         context = {
             "stock": stock_info,
             "historical_data": page_obj,
+          
             "historical_chart_data": json.dumps(historical_chart_data) if historical_chart_data else "[]",
+
             "positive_percent": positive_percent,
             "neutral_percent": neutral_percent,
             "negative_percent": negative_percent,

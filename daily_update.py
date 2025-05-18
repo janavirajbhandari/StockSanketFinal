@@ -3,7 +3,6 @@ import sys
 from datetime import datetime
 import subprocess
 import pandas as pd
-
 def run_command(command, description):
     """Run a command and print its output in real-time"""
     print(f"\n🚀 {description}...")
@@ -49,6 +48,8 @@ def should_run_sentiment_analysis():
         print(f"Error checking file modifications: {e}")
         return True  # Run analysis if there's any error checking
 
+
+
 if __name__ == "__main__":
     print("Update started at", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
@@ -72,3 +73,4 @@ if __name__ == "__main__":
         print("\nℹ️ No new news updates, skipping sentiment analysis.")
 
     print("\nUpdate finished at", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+

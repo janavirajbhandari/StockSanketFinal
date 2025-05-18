@@ -7,7 +7,14 @@ sys.path.append(os.path.abspath("C:/Users/Bishal/Desktop/Final Project/StockSank
 
 from nepse_data.utils import NepseData
 import pandas as pd
-import os
+
+
+sys.path.append(os.path.abspath("C:/Users/Bishal/Desktop/Final Project/StockSanket/nepse-data"))
+
+
+from nepse_data.utils import NepseData
+import pandas as pd
+
 
 class Command(BaseCommand):
     help = "Update or create historical CSV for each stock from NEPSE API."

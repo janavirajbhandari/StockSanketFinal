@@ -21,12 +21,14 @@ urlpatterns = [
     path('stocks/', stock_views.StocksView, name='stocks'),
     path("compare_stocks/", stock_views.compare_stocks_view, name="compare_stocks"),
     path('get_stock_data/<str:symbol>/', stock_views.get_stock_data, name='get_stock_data'),
+
     path('stockDetail/', stock_views.StockDetail, name='stockDetail'),  
     path("ajax/search-stocks/", stock_views.ajax_search_stocks, name="ajax_search_stocks_for_sidebar"),
 
     path('get_stock_data/<str:symbol>/', stock_views.get_stock_data, name='get_stock_data'),
     path('get_market_data/<str:symbol>/', stock_views.get_market_data, name='get_market_data'),
     path('get_prediction_data/<str:symbol>/', stock_views.get_prediction_data, name='get_prediction_data'),
+
 
     path("news/", stock_views.mero_news_view, name="news"),
     path("news/detail/<int:news_id>/", stock_views.news_detail, name="news_detail"),

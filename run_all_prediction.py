@@ -45,12 +45,9 @@ output_dir = r"{stock_output_dir}"
     ep = ExecutePreprocessor(timeout=3600, kernel_name='python3')  # 👈 use 'python3' for compatibility
 
     try:
-<<<<<<< HEAD
         ep.preprocess(nb, {'metadata': {'path': BASE_DIR}})
         print(f"✅ {symbol} complete!")
-=======
-        ep.preprocess(nb, {'metadata': {'path': '.'}})
-        print(f"{symbol} complete!")
->>>>>>> 1b0289d (Project)
+    
+     
     except Exception as e:
         print(f"Error running {symbol}: {e}")

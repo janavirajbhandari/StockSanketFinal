@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['stocksanket-prediction-website-fyp-1.onrender.com', 'localhost
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',  # Add daphne before django.contrib.staticfiles
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,7 +49,7 @@ INSTALLED_APPS = [
     'authentication',  # ✅ Ensure authentication is listed
     'stocks',
     'nepse_utils',
-
+    'alerts',  # Add alerts app
 ]
 
 
@@ -158,3 +159,7 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',  # For now, use in-memory
     }
 }
+
+# WebSocket Configuration
+WEBSOCKET_URL = '/ws/'
+WEBSOCKET_ACCEPT_ALL = True  # For development only

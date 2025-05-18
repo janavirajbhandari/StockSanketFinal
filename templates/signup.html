@@ -17,7 +17,7 @@
     box-sizing: border-box;
 }
 body{
-    background-color: #080710;
+    background-color: white;
 }
 .background{
     width: 430px;
@@ -44,11 +44,13 @@ body{
 .shape:last-child{
     background: linear-gradient(
         to right,
-        #ff512f,
-        #f09819
+         #1845ad,
+        #23a2f6
     );
     right: -30px;
-    bottom: -80px;
+    bottom: -50px;
+    width: 80px;
+    height: 80px;
 }
 form{
     height: 600px;
@@ -60,27 +62,28 @@ form{
     left: 50%;
     border-radius: 10px;
     backdrop-filter: blur(10px);
-    border: 2px solid rgba(255,255,255,0.1);
+    border: 2px solid rgba(0, 0, 0, 0.1);
     box-shadow: 0 0 40px rgba(8,7,16,0.6);
     padding: 50px 35px;
 }
 form *{
     font-family: 'Poppins',sans-serif;
-    color: #ffffff;
+    color: #090178;
     letter-spacing: 0.5px;
     outline: none;
-    border: none;
+    border: 2px #1845ad;
 }
 form h3{
     font-size: 32px;
     font-weight: 500;
     line-height: 42px;
     text-align: center;
+    margin-bottom: 10px;
 }
 
 label{
     display: block;
-    margin-top: 30px;
+    margin-top: 15px;
     font-size: 16px;
     font-weight: 500;
 }
@@ -96,13 +99,13 @@ input{
     font-weight: 300;
 }
 ::placeholder{
-    color: #e5e5e5;
+    color: #000000;
 }
 button{
-    margin-top: 14px;
+    margin-top: 20px;
     width: 100%;
-    background-color: #ffffff;
-    color: #080710;
+    background-color: #001180;
+    color: #ffffff;
     padding: 15px 0;
     font-size: 18px;
     font-weight: 600;
@@ -132,6 +135,56 @@ button{
   margin-right: 4px;
 }
 
+/* Add error alert styling */
+.alert-error {
+    padding: 12px 15px;
+    background-color: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.alert-success {
+    padding: 12px 15px;
+    background-color: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    text-align: center;
+}
+
+p{
+    font-size: 11px;
+}
+a{
+    font-size: 11px;
+}
+
+/* Add password field container style */
+.password-container {
+    position: relative;
+    width: 100%;
+}
+
+.password-container .toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #090178;
+    opacity: 0.7;
+}
+
+.password-container .toggle-password:hover {
+    opacity: 1;
+}
+
     </style>
 </head>
 <body>
@@ -143,21 +196,55 @@ button{
         {% csrf_token %} 
         <h3>Signup Here</h3>
 
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-{% if message.tags %}{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
         <label for="username">Username</label>
-        <input type="text" placeholder="Username" name="username" id="username">
+        <input type="text" placeholder="Enter username" name="username" id="username" required>
 
         <label for="email">Email</label>
-        <input type="email" placeholder="Email or Phone" name="email" id="email">
+        <input type="email" placeholder="Enter email address" name="email" id="email" required>
 
         <label for="password1">Password</label>
-        <input type="password" placeholder="Password" id="password1" name="password1">
+        <div class="password-container">
+            <input type="password" placeholder="Enter password (min. 8 characters)" id="password1" name="password1" required>
+            <i class="fas fa-eye-slash toggle-password" onclick="togglePassword('password1')"></i>
+        </div>
 
-
-        <label for="password2">Confrom Password</label>
-        <input type="password" placeholder="Confrom Password" id="password2" name="password2">
-        <button type="submit">Signup</button>
+        <label for="password2">Confirm Password</label>
+        <div class="password-container">
+            <input type="password" placeholder="Confirm your password" id="password2" name="password2" required>
+            <i class="fas fa-eye-slash toggle-password" onclick="togglePassword('password2')"></i>
+        </div>
         
-        <a href="{% url 'login' %}" >i have already account</a>
+        <button type="submit">Signup</button>
+
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
+            <p style="margin: 0;">Already have an account?</p>
+            <a href="{% url 'login' %}">Log In</a>
+        </div>
     </form>
+
+    <script>
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling;
+            
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            } else {
+                input.type = "password";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            }
+        }
+    </script>
 </body>
 </html>

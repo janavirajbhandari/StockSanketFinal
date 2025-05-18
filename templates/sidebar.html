@@ -1,10 +1,14 @@
 {% load static %}
+<!-- Add viewport meta tag -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
+    /* Base styles */
     #search-results a {
         display: block;
         padding: 0.5rem 1rem;
         font-size: 0.875rem;
-        color: #374151; /* text-gray-700 */
+        color: #374151;
         border-bottom: 1px solid #eee;
         text-decoration: none;
     }
@@ -12,77 +16,133 @@
         background-color: #f3f4f6;
         color: #1d4ed8;
     }
-    </style>
+
+    /* Notification Dropdown Styling */
+    #notification-dropdown {
+        transform-origin: top right;
+        animation: slideDown 0.2s ease-out;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        right: -100px;
+        max-height: 80vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #notification-list {
+        scrollbar-width: thin;
+        scrollbar-color: #CBD5E0 #EDF2F7;
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+
+    #notification-list .sticky {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: white;
+    }
+
+
+    /* Dropdown styles */
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        margin-top: 0.5rem;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 50;
+    }
     
+    .dropdown-menu.show {
+        display: block;
+    }
+</style>
 
+<!-- Mobile Menu Toggle Button -->
+<button id="mobile-menu-toggle" class="fixed top-4 right-4 z-50 p-2 rounded-md bg-blue-600 text-white lg:hidden">
+    <span class="material-icons">menu</span>
+</button>
 
-<!-- Top Navbar (White Background) -->
+<!-- Top Navigation Bar -->
 <nav class="h-16 w-full bg-white border-b shadow-sm flex items-center px-6 justify-between fixed top-0 left-0 right-0 z-50">
     <!-- Left Side: Logo -->
     <div class="flex items-center space-x-3">
         <img src="{% static 'logo.png' %}" class="h-14 w-70" alt="Logo">
     </div>
 
+    <!-- Center: Search Bar -->
     <div class="w-1/3 relative">
         <div class="flex items-center bg-gray-100 px-3 py-2 rounded-lg shadow-sm">
             <span class="material-icons text-gray-500">search</span>
             <input type="text" id="stock-search" placeholder="Search by Symbol or Company Name" 
-                   class="w-full outline-none bg-transparent ml-2 text-sm relative z-10">
+                   class="w-full outline-none bg-transparent ml-2 text-sm">
         </div>
-    
-        <!-- ✅ Moved outside of the input container, so it's not restricted -->
-        <div id="search-results" 
-             class="absolute top-full left-0 right-0 mt-1 bg-white shadow-lg rounded-md z-20 hidden max-h-64 overflow-y-auto border border-gray-200">
+        <div id="search-results" class="absolute top-full left-0 right-0 mt-1 bg-white shadow-lg rounded-md hidden max-h-64 overflow-y-auto border border-gray-200">
         </div>
     </div>
-    
 
-    <!-- Right Side: Login & Contact -->
-    <div class="flex items-center space-x-4 relative">
+    <!-- Right Side: User Menu -->
+    <div class="flex items-center space-x-4">
         {% if user.is_authenticated %}
-            <!-- Notification Icon -->
-            <!-- Notification Icon with Badge -->
-        <div class="relative">
-            <button onclick="toggleNotifications()" class="relative">
-            <span class="material-icons text-gray-700">notifications</span>
-            <span id="notif-count" class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">0</span>
-            </button>
-        
-            <!-- Notification Dropdown -->
-            <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-lg border border-gray-200 z-50">
-            <div class="px-4 py-2 font-semibold text-gray-800 border-b">Notifications</div>
-            <ul id="notification-list" class="max-h-60 overflow-y-auto divide-y divide-gray-200">
-                <!-- Notifications will be inserted here -->
-            </ul>
-            </div>
-        </div>
-  
-
-            <!-- User Avatar with Dropdown on Click -->
+            <!-- Notifications -->
             <div class="relative">
-                <button onclick="toggleUserMenu()" class="flex items-center focus:outline-none">
+                <button type="button" 
+                        id="notification-toggle" 
+                        class="p-2 rounded-full hover:bg-gray-100 focus:outline-none">
+                    <span class="material-icons text-gray-700">notifications</span>
+                    <span id="notif-count" 
+                          class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1 hidden">0</span>
+                </button>
+
+                <!-- Notification Dropdown -->
+                <div id="notification-dropdown" 
+                     class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50"
+                     style="display: none; right: -100px;">
+                    <div class="flex justify-between items-center px-4 py-3 border-b">
+                        <h3 class="font-semibold text-gray-800">Notifications</h3>
+                    </div>
+                    <div id="notification-list" class="max-h-96 overflow-y-auto">
+                        <!-- Notifications will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Profile -->
+            <div class="relative">
+                <button type="button" id="user-menu-button" class="flex items-center space-x-2 focus:outline-none">
                     <span class="material-icons text-gray-700">account_circle</span>
                 </button>
-                <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                    <div class="px-4 py-2 text-gray-800 font-semibold border-b">{{ user.username }}</div>
-                    <form method="POST" action="{% url 'logout' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 hover:text-red-800">
-                            Logout
-                        </button>
-                    </form>
+
+                <!-- User Dropdown Menu -->
+                <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                    <div class="px-4 py-3 border-b">
+                        <p class="text-sm font-medium text-gray-900">{{ user.username }}</p>
+                    </div>
+                    <div class="py-1">
+                        <form method="POST" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         {% else %}
-            <!-- Login Button -->8
             <a href="{% url 'login' %}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
                 Log In
             </a>
         {% endif %}
 
-        <!-- Phone Icon & Number -->
-        <span class="material-icons text-blue-600">call</span>
-        <span class="ml-1 font-medium">981-511-1199</span>
+        <!-- Phone Number -->
+        <div class="flex items-center">
+            <span class="material-icons text-blue-600">call</span>
+            <span class="ml-1 font-medium">981-511-1199</span>
+        </div>
     </div>
 </nav>
 
@@ -110,9 +170,9 @@
                 </a>
             </li>
             <li class="relative flex items-center py-3 px-4 my-1 font-medium rounded-md cursor-pointer transition hover:bg-gray-300 pl-3">
-                <a href="{% url 'articles' %}" class="flex items-center w-full">
-                    <span class="material-icons">library_books</span>
-                    <span class="ml-3">Articles</span>
+                <a href="{% url 'compare_stocks' %}" class="flex items-center w-full">
+                    <span class="material-icons">compare_arrows</span>
+                    <span class="ml-3">Compare</span>
                 </a>
             </li>
             <li class="relative flex items-center py-3 px-4 my-1 font-medium rounded-md cursor-pointer transition hover:bg-gray-300 pl-3">
@@ -138,158 +198,128 @@
 </aside>
 
 <script>
-    function toggleUserMenu() {
-        const menu = document.getElementById("user-menu");
-        menu.classList.toggle("hidden");
+document.addEventListener('DOMContentLoaded', function() {
+    // Get elements
+    const notifToggle = document.getElementById('notification-toggle');
+    const notifDropdown = document.getElementById('notification-dropdown');
+    const userToggle = document.getElementById('user-menu-button');
+    const userDropdown = document.getElementById('user-menu');
+
+    // Ensure dropdowns are hidden initially
+    if (notifDropdown) {
+        notifDropdown.style.display = 'none';
+        notifDropdown.classList.add('hidden');
+    }
+    if (userDropdown) {
+        userDropdown.classList.add('hidden');
     }
 
-    document.addEventListener("click", function (event) {
-        const menu = document.getElementById("user-menu");
-        const button = document.querySelector('[onclick="toggleUserMenu()"]');
-
-        if (!menu.contains(event.target) && !button.contains(event.target)) {
-            menu.classList.add("hidden");
+    // Toggle notification dropdown
+    notifToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Close user menu if open
+        if (userDropdown) {
+            userDropdown.classList.add('hidden');
+        }
+        
+        // Toggle notification dropdown
+        if (notifDropdown.style.display === 'none') {
+            notifDropdown.style.display = 'block';
+            notifDropdown.classList.remove('hidden');
+        } else {
+            notifDropdown.style.display = 'none';
+            notifDropdown.classList.add('hidden');
         }
     });
 
-
-    let notifications = [
-    { id: 1, message: "AAPL added to Watchlist", type: "success", read: false },
-    { id: 2, message: "Failed to fetch TSLA", type: "error", read: false },
-    { id: 3, message: "GOOGL price updated", type: "info", read: false },
-];
-
-function toggleNotifications() {
-    const dropdown = document.getElementById("notification-dropdown");
-    dropdown.classList.toggle("hidden");
-}
-
-function renderNotifications() {
-    const list = document.getElementById("notification-list");
-    const count = document.getElementById("notif-count");
-    list.innerHTML = ""; // Clear old items
-
-    let unreadCount = 0;
-
-    notifications.forEach((notif) => {
-        if (!notif.read) unreadCount++;
-
-        const li = document.createElement("li");
-        li.className = "px-4 py-3 flex justify-between items-center text-sm";
-        li.innerHTML = `
-            <span class="${notif.type === 'error' ? 'text-red-600' : notif.type === 'success' ? 'text-green-600' : 'text-gray-700'}">${notif.message}</span>
-            <button onclick="markAsRead(${notif.id})" class="text-xs text-blue-500 hover:underline">Close</button>
-        `;
-        list.appendChild(li);
+    // Handle user menu toggle
+    userToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Close notification dropdown
+        if (notifDropdown) {
+            notifDropdown.style.display = 'none';
+            notifDropdown.classList.add('hidden');
+        }
+        
+        // Toggle user menu
+        userDropdown.classList.toggle('hidden');
     });
 
-    count.innerText = unreadCount;
-    count.classList.toggle("hidden", unreadCount === 0);
-}
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!notifToggle.contains(e.target) && !notifDropdown.contains(e.target)) {
+            notifDropdown.style.display = 'none';
+            notifDropdown.classList.add('hidden');
+        }
+        if (!userToggle.contains(e.target) && !userDropdown.contains(e.target)) {
+            userDropdown.classList.add('hidden');
+        }
+    });
 
-function markAsRead(id) {
-    notifications = notifications.map(n => n.id === id ? { ...n, read: true } : n);
-    renderNotifications();
-}
-
-document.addEventListener("DOMContentLoaded", renderNotifications);
-
-// Optional: Close dropdown when clicking outside
-document.addEventListener("click", function (e) {
-    const dropdown = document.getElementById("notification-dropdown");
-    const button = document.querySelector('button[onclick="toggleNotifications()"]');
-
-    if (!dropdown.contains(e.target) && !button.contains(e.target)) {
-        dropdown.classList.add("hidden");
-    }
+    // Close dropdowns on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            notifDropdown.style.display = 'none';
+            notifDropdown.classList.add('hidden');
+            userDropdown.classList.add('hidden');
+        }
+    });
 });
 
-
+// Search functionality
 function searchStocks() {
     const input = document.getElementById("stock-search");
-    const list = document.getElementById("suggestions");
+    const results = document.getElementById("search-results");
     const query = input.value;
 
     if (!query.trim()) {
-        list.innerHTML = "";
-        list.classList.add("hidden");
+        results.innerHTML = "";
+        results.classList.add("hidden");
         return;
     }
 
     fetch(`/search-stocks/?q=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
-            list.innerHTML = "";
+            results.innerHTML = "";
             if (data.length === 0) {
-                list.classList.add("hidden");
+                results.classList.add("hidden");
                 return;
             }
 
             data.forEach(stock => {
-                const li = document.createElement("li");
-                li.className = "px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm";
-                li.textContent = `${stock.symbol} — ${stock.name}`;
-                li.onclick = () => {
-                    window.location.href = `/compare_stocks/?symbol=${stock.symbol}`;
-                };
-                list.appendChild(li);
+                const a = document.createElement("a");
+                a.href = `/stocks/${stock.symbol}/`;
+                a.textContent = `${stock.symbol} — ${stock.name}`;
+                results.appendChild(a);
             });
 
-            list.classList.remove("hidden");
+            results.classList.remove("hidden");
         });
 }
 
-// Optional: Hide suggestions on outside click
-document.addEventListener("click", function (event) {
-    const suggestions = document.getElementById("suggestions");
-    const searchInput = document.getElementById("stock-search");
+// Handle search input
+const searchInput = document.getElementById("stock-search");
+if (searchInput) {
+    searchInput.addEventListener("input", searchStocks);
+    searchInput.addEventListener("focus", searchStocks);
+}
 
-    if (!suggestions.contains(event.target) && event.target !== searchInput) {
-        suggestions.classList.add("hidden");
+// Hide search results when clicking outside
+document.addEventListener("click", function(event) {
+    const results = document.getElementById("search-results");
+    const searchInput = document.getElementById("stock-search");
+    
+    if (results && !results.contains(event.target) && event.target !== searchInput) {
+        results.classList.add("hidden");
     }
 });
-
 </script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const searchInput = document.getElementById("stock-search");
-        const resultsBox = document.getElementById("search-results");
-    
-        searchInput.addEventListener("input", function () {
-            const query = this.value;
-            if (query.length === 0) {
-                resultsBox.innerHTML = "";
-                resultsBox.classList.add("hidden");
-                return;
-            }
-    
-            fetch(`/ajax/search-stocks/?q=${encodeURIComponent(query)}`)
-                .then(response => response.json())
-                .then(data => {
-                    const results = data.results;
-                    if (results.length === 0) {
-                        resultsBox.innerHTML = "<div class='px-4 py-2 text-gray-500'>No matches</div>";
-                        resultsBox.classList.remove("hidden");
-                        return;
-                    }
-    
-                    resultsBox.innerHTML = results.map(item => `
-                        <a href="/stockDetail/?symbol=${item.symbol}" class="block px-4 py-2 hover:bg-gray-200 text-sm text-gray-700">
-                             <span class="font-semibold text-blue-600 ml-2">(${item.symbol})</span>
-                             <span>${item.name}</span>
-                        </a>
-                    `).join("");
-    
-                    resultsBox.classList.remove("hidden");
-                });
-        });
-    
-        // Hide dropdown when clicking outside
-        document.addEventListener("click", function (e) {
-            if (!searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
-                resultsBox.classList.add("hidden");
-            }
-        });
-    });
-    </script>
+
+<!-- Load notifications.js -->
+<script src="{% static 'js/notifications.js' %}"></script>
     

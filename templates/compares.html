@@ -37,35 +37,25 @@
             </div>
 
             <!-- Chart Container -->
-            <!-- Chart Container -->
-<div class="bg-white p-6 shadow-lg rounded-lg relative">
-    <canvas id="stock-chart" width="800" height="400"></canvas>
-    <p id="no-data-message" class="text-gray-500 text-center absolute inset-0 flex justify-center items-center">
-        No stocks selected. Add a stock to compare.
-    </p>
-</div>
+            <div class="bg-white p-6 shadow-lg rounded-lg relative">
+                <!-- Chart Loading Spinner -->
+                <div id="chart-loading" class="absolute inset-0 bg-white bg-opacity-75 flex justify-center items-center z-10">
+                    <div class="flex flex-col items-center">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <span class="mt-2 text-gray-600">Loading chart data...</span>
+                    </div>
+                </div>
+                
+                <canvas id="stock-chart" width="800" height="400"></canvas>
+                <p id="no-data-message" class="text-gray-500 text-center absolute inset-0 flex justify-center items-center">
+                    No stocks selected. Add a stock to compare.
+                </p>
+            </div>
 
-<!-- Stock Data Table (Below the Chart) -->
-<div id="stock-table-container" class="hidden mt-8 bg-white p-6 shadow-lg rounded-lg w-full">
-    <h2 class="text-xl font-bold mb-4 text-center">Stock Comparison</h2>
-    <table class="w-full border-collapse border border-gray-300">
-        <thead>
-            <tr class="bg-gray-200 text-center">
-                <th class="border border-gray-300 px-4 py-2">Symbol</th>
-                <th class="border border-gray-300 px-4 py-2">Company Name</th>
-                <th class="border border-gray-300 px-4 py-2">Market Cap</th>
-                <th class="border border-gray-300 px-4 py-2">Stock Price</th>
-                <th class="border border-gray-300 px-4 py-2">% Change</th>
-                <th class="border border-gray-300 px-4 py-2">Volume</th>
-                <th class="border border-gray-300 px-4 py-2">PE Ratio</th>
-            </tr>
-        </thead>
-        <tbody id="stock-table-body"></tbody>
-    </table>
-</div>
+            <!-- Include Stock Comparison Table -->
+            {% include 'partials/stock_comparison_table.html' %}
 
-
-
+        </div>
     </div>
 
     <script>
@@ -73,6 +63,37 @@
         let stockChart;
         let stockData = {};
         let currentTimeframe = "1M";
+        let stockColors = {};
+        let fullStockData = {}; // Store complete historical data
+
+        // Define a fixed set of distinct colors
+        const chartColors = [
+            "#FF5733",  // Bright Red/Orange
+            "#3366FF",  // Bright Blue
+            "#33FF57",  // Bright Green
+            "#9933FF",  // Purple
+            "#FF33A8",  // Pink
+            "#FFD700",  // Gold
+            "#00CED1",  // Dark Turquoise
+            "#FF6B6B",  // Coral
+            "#4CAF50",  // Material Green
+            "#9C27B0",  // Deep Purple
+            "#FF9800",  // Orange
+            "#2196F3"   // Light Blue
+        ];
+
+        // Get next available color for a stock
+        function getColorForStock(symbol) {
+            if (stockColors[symbol]) {
+                return stockColors[symbol];
+            }
+            
+            // Find first unused color
+            const usedColors = Object.values(stockColors);
+            const availableColor = chartColors.find(color => !usedColors.includes(color)) || chartColors[0];
+            stockColors[symbol] = availableColor;
+            return availableColor;
+        }
 
         // ✅ Extract stock symbol from URL (for redirection)
         function getQueryParameter(name) {
@@ -88,15 +109,15 @@
             }
 
             try {
-                const response = await fetch(`/search_stocks/?query=${query}`);
+                const response = await fetch(`/ajax/search-stocks/?query=${query}`);
                 const data = await response.json();
 
-                if (!data.stocks || data.stocks.length === 0) {
+                if (!data.results || data.results.length === 0) {
                     document.getElementById("stock-suggestions").classList.add("hidden");
                     return;
                 }
 
-                showStockSuggestions(data.stocks);
+                showStockSuggestions(data.results);
             } catch (error) {
                 console.error("Error fetching stock symbols:", error);
             }
@@ -121,6 +142,244 @@
             suggestionBox.classList.remove("hidden");
         }
 
+        // Initialize chart with loading state
+        function initializeChart() {
+            const ctx = document.getElementById("stock-chart").getContext("2d");
+            if (!stockChart) {
+                stockChart = new Chart(ctx, {
+                    type: "line",
+                    data: { labels: [], datasets: [] },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { 
+                            x: { display: true },
+                            y: { display: true }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        elements: {
+                            point: {
+                                radius: 2,
+                                hoverRadius: 4,
+                                borderWidth: 1
+                            },
+                            line: {
+                                borderWidth: 2,
+                                tension: 0.1
+                            }
+                        }
+                    }
+                });
+            }
+            // Hide loading states initially if no stocks
+            if (selectedStocks.length === 0) {
+                document.getElementById("chart-loading").style.display = "none";
+                document.getElementById("stock-table-container").classList.add("hidden");
+                document.getElementById("no-data-message").style.display = "flex";
+            }
+            return stockChart;
+        }
+
+        // Load table component when page loads
+        document.addEventListener("DOMContentLoaded", function() {
+            initializeChart();
+            
+            const symbol = getQueryParameter("symbol");
+            if (symbol) {
+                selectedStocks.push(symbol);
+                updateStockTags();
+                fetchStockData(symbol);
+                document.getElementById("no-data-message").style.display = "none";
+            } else {
+                // Set initial state
+                document.getElementById("stock-table-container").classList.add("hidden");
+                document.getElementById("no-data-message").style.display = "flex";
+                document.getElementById("no-data-message").textContent = "No stocks selected. Add a stock to compare.";
+                document.getElementById("chart-loading").style.display = "none";
+            }
+        });
+
+        // Function to filter data based on timeframe
+        function filterDataByTimeframe(data, timeframe) {
+            if (!data || !data.dates || !data.prices) return data;
+            
+            const today = new Date();
+            let startDate = new Date();
+            
+            switch(timeframe) {
+                case "1M":
+                    startDate.setMonth(today.getMonth() - 1);
+                    break;
+                case "6M":
+                    startDate.setMonth(today.getMonth() - 6);
+                    break;
+                case "YTD":
+                    startDate = new Date(today.getFullYear(), 0, 1);
+                    break;
+                case "1Y":
+                    startDate.setFullYear(today.getFullYear() - 1);
+                    break;
+                case "5Y":
+                    startDate.setFullYear(today.getFullYear() - 5);
+                    break;
+                case "10Y":
+                    startDate.setFullYear(today.getFullYear() - 10);
+                    break;
+                default:
+                    return data;
+            }
+
+            const startTimestamp = startDate.getTime();
+            const filteredIndices = data.dates.reduce((acc, date, index) => {
+                if (new Date(date).getTime() >= startTimestamp) {
+                    acc.push(index);
+                }
+                return acc;
+            }, []);
+
+            return {
+                ...data,
+                dates: filteredIndices.map(i => data.dates[i]),
+                prices: filteredIndices.map(i => data.prices[i])
+            };
+        }
+
+        // Modified fetch function to store complete data
+        function fetchStockData(symbol) {
+            console.log("Fetching data for:", symbol);
+            
+            // Show loading states
+            document.getElementById("chart-loading").style.display = "flex";
+            document.getElementById("no-data-message").style.display = "none";
+            
+            // Start both fetches in parallel
+            const chartPromise = fetch(`/get_stock_data/${symbol}/?timeframe=10Y`); // Always fetch full data
+            const tablePromise = fetch(`/get_market_data/${symbol}/`);
+
+            // Handle chart data first (it's faster)
+            chartPromise
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+
+                    // Store complete data
+                    fullStockData[symbol] = data;
+                    // Filter data for current timeframe
+                    stockData[symbol] = filterDataByTimeframe(data, currentTimeframe);
+                    updateChart();
+                })
+                .catch(error => {
+                    console.error("Chart Data Fetch Error:", error);
+                    document.getElementById("no-data-message").textContent = "Error loading chart data: " + error.message;
+                    document.getElementById("no-data-message").style.display = "flex";
+                })
+                .finally(() => {
+                    document.getElementById("chart-loading").style.display = "none";
+                });
+
+            // Handle table data separately
+            tablePromise
+                .then(response => response.json())
+                .then(data => {
+                    updateTableData(symbol, data);
+                })
+                .catch(error => {
+                    console.error("Table Data Fetch Error:", error);
+                });
+        }
+
+        // ✅ Update Stock Table (Show table when stocks are added)
+        function updateStockTable() {
+            const tableBody = document.getElementById("stock-table-body");
+            tableBody.innerHTML = "";
+
+            selectedStocks.forEach(symbol => {
+                const stockInfo = stockData[symbol] || {};
+                const changeValue = parseFloat(stockInfo.change || 0);
+                const changeColor = changeValue < 0 ? 'text-red-600' : 'text-green-600';
+                const changeSign = changeValue > 0 ? '+' : '';
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${symbol}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${stockInfo.company || "Loading..."}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${stockInfo.market_cap || "Loading..."}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${stockInfo.price || "Loading..."}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm ${changeColor} font-semibold text-right">${changeValue ? `${changeSign}${changeValue}%` : "Loading..."}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${stockInfo.volume || "Loading..."}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${stockInfo.turnover || "Loading..."}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Optimized timeframe selection - uses cached data
+        function setTimeFrame(timeframe) {
+            document.getElementById("chart-loading").style.display = "flex";
+            currentTimeframe = timeframe;
+            
+            // Update all selected stocks with filtered data
+            selectedStocks.forEach(symbol => {
+                if (fullStockData[symbol]) {
+                    stockData[symbol] = filterDataByTimeframe(fullStockData[symbol], timeframe);
+                }
+            });
+            
+            // Update chart with filtered data
+            updateChart();
+            document.getElementById("chart-loading").style.display = "none";
+        }
+
+        // Update chart function - only handles chart updates
+        function updateChart() {
+            if (!stockChart) return;
+            
+            if (selectedStocks.length === 0) {
+                stockChart.data.labels = [];
+                stockChart.data.datasets = [];
+                stockChart.update('none');
+                document.getElementById("chart-loading").style.display = "none";
+                document.getElementById("no-data-message").style.display = "flex";
+                document.getElementById("no-data-message").textContent = "No stocks selected. Add a stock to compare.";
+                return;
+            }
+
+            document.getElementById("no-data-message").style.display = "none";
+            
+            const firstStock = selectedStocks[0];
+            stockChart.data.labels = stockData[firstStock]?.dates || [];
+            stockChart.data.datasets = [];
+
+            selectedStocks.forEach(symbol => {
+                if (stockData[symbol]?.prices) {
+                    const color = getColorForStock(symbol);
+                    const dataset = {
+                        label: symbol,
+                        data: stockData[symbol].prices,
+                        borderColor: color,
+                        backgroundColor: color,
+                        fill: false,
+                        tension: 0.1,
+                        borderWidth: 2,
+                        pointRadius: 1,
+                        pointHoverRadius: 4,
+                        pointBorderWidth: 1
+                    };
+                    stockChart.data.datasets.push(dataset);
+                }
+            });
+
+            stockChart.update('none');
+        }
+
         // ✅ Add stock to comparison
         function addStock() {
             const stockInput = document.getElementById("stock-input").value.toUpperCase();
@@ -131,9 +390,7 @@
             fetchStockData(stockInput);
             document.getElementById("stock-input").value = "";
             document.getElementById("stock-suggestions").classList.add("hidden");
-            updateStockTable();
         }
-
 
         // ✅ Update stock tags in the UI
         function updateStockTags() {
@@ -151,120 +408,47 @@
         function removeStock(stock) {
             selectedStocks = selectedStocks.filter(s => s !== stock);
             delete stockData[stock];
+            delete stockColors[stock];
             updateStockTags();
-            updateStockTable();
-            updateChart();
-        }
-
-        // ✅ Fetch stock data dynamically from API
-        // ✅ Fetch stock data dynamically from API
-function fetchStockData(symbol) {
-    console.log("Fetching data for:", symbol);
-    
-    fetch(`/get_stock_data/${symbol}/?timeframe=${currentTimeframe}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log("API Response:", data);
-
-            if (data.error) {
-                alert("Error fetching stock data: " + data.error);
-            } else {
-                stockData[symbol] = data;
-                updateChart();
-                updateStockTable(); // ✅ Update the table after fetching stock data
+            
+            // Remove from table
+            const row = document.querySelector(`tr[data-symbol="${stock}"]`);
+            if (row) {
+                row.remove();
             }
-        })
-        .catch(error => console.error("Fetch Error:", error));
-}
-
-// ✅ Update Stock Table (Show table when stocks are added)
-function updateStockTable() {
-    const tableContainer = document.getElementById("stock-table-container");
-    const tableBody = document.getElementById("stock-table-body");
-    tableBody.innerHTML = "";
-
-    if (selectedStocks.length === 0) {
-        tableContainer.classList.add("hidden"); // Hide table if no stocks
-        return;
-    }
-
-    selectedStocks.forEach(stock => {
-        const stockInfo = stockData[stock] || {}; // Ensure stock data exists
-
-        const row = `<tr>
-                    <td>${stock}</td>
-                    <td>${stockData[stock]?.company || "N/A"}</td>
-                    <td>${stockData[stock]?.market_cap || "N/A"}</td>
-                    <td>${stockData[stock]?.price || "N/A"}</td>
-                    <td>${stockData[stock]?.change || "N/A"}</td>
-                    <td>${stockData[stock]?.volume || "N/A"}</td>
-                    <td>${stockData[stock]?.pe_ratio || "N/A"}</td>
-                </tr>`;
-                tableBody.innerHTML += row;
-    });
-
-    tableContainer.classList.remove("hidden"); // ✅ Make the table visible
-}
-
-        
-
-        // ✅ Handle timeframe selection
-        function setTimeFrame(timeframe) {
-            currentTimeframe = timeframe;
-            selectedStocks.forEach(stock => fetchStockData(stock));
+            
+            // If no stocks remain, reset to initial state
+            if (selectedStocks.length === 0) {
+                if (stockChart) {
+                    stockChart.data.labels = [];
+                    stockChart.data.datasets = [];
+                    stockChart.update('none');
+                }
+                // Reset to initial state
+                document.getElementById("chart-loading").style.display = "none";
+                document.getElementById("stock-table-container").classList.add("hidden");
+                document.getElementById("no-data-message").style.display = "flex";
+                document.getElementById("no-data-message").textContent = "No stocks selected. Add a stock to compare.";
+            } else {
+                updateChart();
+                // Make sure table is still visible if there are remaining stocks
+                document.getElementById("stock-table-container").classList.remove("hidden");
+            }
         }
 
-        // ✅ Update chart with stock data
-        function updateChart() {
-            const ctx = document.getElementById("stock-chart").getContext("2d");
-
-            if (!stockChart) {
-                stockChart = new Chart(ctx, {
-                    type: "line",
-                    data: { labels: [], datasets: [] },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: { x: { display: true }, y: { display: true } }
+        // Function to load table component
+        function loadTableComponent() {
+            const tableContainer = document.getElementById('table-container');
+            fetch('/load_table_component/')
+                .then(response => response.text())
+                .then(html => {
+                    tableContainer.innerHTML = html;
+                    if (selectedStocks.length > 0) {
+                        document.getElementById("stock-table-container").classList.remove("hidden");
+                        updateStockTable();
                     }
                 });
-            }
-
-            stockChart.data.labels = stockData[selectedStocks[0]]?.dates || [];
-            stockChart.data.datasets = [];
-
-            let hasData = false;
-            for (const symbol in stockData) {
-                const dataset = {
-                    label: symbol,
-                    data: stockData[symbol].prices,
-                    borderColor: getRandomColor(),
-                    fill: false
-                };
-                stockChart.data.datasets.push(dataset);
-                hasData = true;
-            }
-
-            stockChart.update();
-            document.getElementById("no-data-message").style.display = hasData ? "none" : "block";
         }
-
-        // ✅ Generate random colors for chart lines
-        function getRandomColor() {
-            const colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A8", "#FFD700"];
-            return colors[Math.floor(Math.random() * colors.length)];
-        }
-
-        // ✅ Auto-load stock symbol from URL
-        document.addEventListener("DOMContentLoaded", function () {
-            const symbol = getQueryParameter("symbol");
-            if (symbol) {
-                selectedStocks.push(symbol);
-                updateStockTags();
-                fetchStockData(symbol);
-            }
-        });
-
 
     </script>
     {% endblock %}

@@ -6,8 +6,11 @@ from django.core.paginator import Paginator
 from stocks.models import Stock
 from django.contrib.auth import logout
 from django.shortcuts import redirect
+from django.contrib import messages
 import pandas as pd
 from bs4 import BeautifulSoup
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 
 import os
@@ -181,15 +184,41 @@ def SignupPage(request):
         pass1=request.POST.get('password1')
         pass2=request.POST.get('password2')
 
-        if pass1!=pass2:
-            return HttpResponse("Your password and confrom password are not Same!!")
-        else:
+        # Validate username
+        if User.objects.filter(username=uname).exists():
+            messages.error(request, "Username already exists!")
+            return render(request, 'signup.html')
 
-            my_user=User.objects.create_user(uname,email,pass1)
+        # Validate email
+        try:
+            validate_email(email)
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "Email already registered!")
+                return render(request, 'signup.html')
+        except ValidationError:
+            messages.error(request, "Please enter a valid email address!")
+            return render(request, 'signup.html')
+
+        # Validate password
+        if len(pass1) < 8:
+            messages.error(request, "Password must be at least 8 characters long!")
+            return render(request, 'signup.html')
+
+        if pass1 != pass2:
+            messages.error(request, "Passwords do not match!")
+            return render(request, 'signup.html')
+
+        # If all validations pass, create user
+        try:
+            my_user = User.objects.create_user(uname, email, pass1)
             my_user.save()
+            messages.success(request, "Account created successfully! Please login.")
             return redirect('login')
+        except Exception as e:
+            messages.error(request, "An error occurred while creating your account.")
+            return render(request, 'signup.html')
 
-    return render (request,'signup.html')
+    return render(request, 'signup.html')
 
 def LoginPage(request):
     if request.method=='POST':
@@ -200,9 +229,10 @@ def LoginPage(request):
             login(request,user)
             return redirect('home')
         else:
-            return HttpResponse ("Username or Password is incorrect!!!")
+            messages.error(request, "Invalid username or password!")
+            return render(request, 'login.html')
 
-    return render (request,'login.html')
+    return render(request,'login.html')
 
 def LogoutPage(request):
     logout(request)
